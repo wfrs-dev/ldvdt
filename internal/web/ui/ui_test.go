@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"math"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -58,11 +61,52 @@ func TestKeyboardHasAllKeys(t *testing.T) {
 	// Decorative modifier keys for a realistic ISO look.
 	for _, cls := range []string{
 		"key-tab", "key-caps", "key-shift-left", "key-shift-right",
-		"key-backspace", "key-enter",
+		"key-backspace", "key-enter-top", "key-enter-bottom",
 	} {
 		if !strings.Contains(html, cls) {
 			t.Errorf("missing decorative key %q", cls)
 		}
+	}
+
+	// The super (Meta/Windows) key appears on both sides of the spacebar.
+	if got := strings.Count(html, "key-super"); got != 2 {
+		t.Errorf("super keys = %d, want 2", got)
+	}
+}
+
+// TestKeyboardRowsSameWidth enforces that every row sums to the same number of
+// width units, which is what keeps both edges of the keyboard aligned.
+func TestKeyboardRowsSameWidth(t *testing.T) {
+	kb := domain.DefaultKeyboard()
+	html := render(t, Keyboard(kb))
+
+	const wantUnits = 15.0
+
+	chunks := strings.Split(html, `class="keyrow `)
+	if len(chunks) < 2 {
+		t.Fatal("no keyboard rows rendered")
+	}
+
+	widthRe := regexp.MustCompile(`data-w="([0-9.]+)"`)
+	seen := 0
+	for _, chunk := range chunks[1:] {
+		name := chunk[:strings.Index(chunk, `"`)]
+		sum := 0.0
+		for _, m := range widthRe.FindAllStringSubmatch(chunk, -1) {
+			v, err := strconv.ParseFloat(m[1], 64)
+			if err != nil {
+				t.Fatalf("row %q: bad data-w %q: %v", name, m[1], err)
+			}
+			sum += v
+		}
+		if math.Abs(sum-wantUnits) > 1e-9 {
+			t.Errorf("row %q sums to %v units, want %v", name, sum, wantUnits)
+		}
+		seen++
+	}
+
+	if seen != 5 {
+		t.Errorf("checked %d rows, want 5", seen)
 	}
 }
 
