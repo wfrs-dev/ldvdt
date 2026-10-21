@@ -199,7 +199,7 @@
         const root = document.getElementById("words");
         if (root) {
           const summary = document.createElement("p");
-          summary.className = "hint";
+          summary.className = "practice-summary";
           summary.textContent =
             "Listo — " + Math.round(wpm) + " WPM · " +
             (accuracy * 100).toFixed(1) + "% precisión · " +

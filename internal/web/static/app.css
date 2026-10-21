@@ -228,7 +228,7 @@ h1, h2, h3 { font-style: italic; }
   margin: 0;
 }
 
-.stats dt { color: var(--muted); }
+.stats dt { color: var(--muted); font-weight: 700; font-style: italic; }
 .stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 
 .chart-box { grid-area: chart; margin-top: 0; height: 160px; }
@@ -254,6 +254,17 @@ h1, h2, h3 { font-style: italic; }
 .char.incorrect { color: var(--incorrect); background: var(--incorrect-bg); }
 
 .hint { color: var(--muted); text-align: center; max-width: 480px; }
+
+/* Completion summary (WPM, accuracy, rhythm): centred, bold and italic, in the
+   same italic voice as the headings. */
+.practice-summary {
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--text);
+}
 
 /* ---- keyboard ---- */
 .keyboard {
