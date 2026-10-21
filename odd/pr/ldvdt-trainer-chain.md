@@ -1,149 +1,67 @@
-# Delivery plan — `feat/ldvdt-trainer` (feature-branch chain)
+# Delivery record — `ldvdt` trainer (feature-branch chain)
 
 Strategy: **`chain_strategy=feature-branch-chain`**, selected by the project owner.
 
 ## Status
 
-**Nothing is pushed and no PR exists.** The target is configured as
-`origin = git@github.com:wfrs-dev/ldvdt.git` and is reachable over SSH, but the
-remote repository is **completely empty** (`git ls-remote origin` returns no
-refs): there is no default branch, no label and no issue yet. Every remote
-operation below still needs its own explicit authorization.
+**Delivered.** `origin = git@github.com:wfrs-dev/ldvdt.git` (default branch
+`main`), the feature issue is approved, and every PR in the chain is merged.
+There is nothing left to push or open. The only outstanding item is human
+validation of the running app in a real browser.
 
-## Review budget
+## Chain
 
-`master..HEAD` = 90 files, **+10,751 / -0** lines:
+GitHub shares the issue/PR number sequence, so the first PR is #2 (issue #1
+took the number 1).
 
-| Category | Files | Lines |
-| --- | --- | --- |
-| Authored source and docs | 46 | 4,518 |
-| Practice corpora (`resources/*.dat`, data) | 2 | 6,233 |
-| Binary theme assets (`resources/font/**`) | 42 | — |
+| Ref | Base | Head | State |
+| --- | --- | --- | --- |
+| Issue #1 | — | — | CLOSED — `status:approved`, "feat: ldvdt keyboard layout trainer" |
+| PR #2 | `feat/ldvdt-trainer` | `feat/ldvdt-foundation` | MERGED — foundation (scaffold, domain, corpus, storage) |
+| PR #3 | `feat/ldvdt-foundation` | `feat/ldvdt-practice-slice` | MERGED — practice slice (SPA, ISO keyboard, typing engine) |
+| PR #4 | `feat/ldvdt-practice-slice` | `feat/ldvdt-keyboard-accent` | MERGED — keyboard polish + dead-key accents |
+| PR #5 | `feat/ldvdt-keyboard-accent` | `feat/ldvdt-charts-docs` | MERGED — charts, docs, review fixes |
+| PR #6 | `main` | `feat/ldvdt-work` | MERGED — integration tracker |
 
-Review budget (the number that matters for slicing) is the **4,518 authored
-lines**, not the 10,751 total.
+All feature branches were deleted after merge; only `main` remains locally and
+on the remote.
 
 ## Slices
 
-Branches are cumulative; each child includes its ancestors.
+| # | PR | Authored scope | End state |
+| --- | --- | --- | --- |
+| 1 | #2 | Module scaffold, home-row YAML fix, keyboard/level domain + generator, corpus loader, SQLite storage, config, server bootstrap, embedded assets | Binary serves `/status/health`; no practice UI |
+| 2 | #3 | templ SPA shell + ISO keyboard, stylesheet, client typing engine, trainer handlers/use cases, level-1 end-to-end test | Full level-1 practice from the browser |
+| 3 | #4 | Word spacing/wrap, spacebar highlight, decorative ISO keys, uniform 15u rows, dead-key accents + browser composition fix | Levels 3–4 playable including `á é í ó ú` and `Á É Í Ó Ú` |
+| 4 | #5 | Chart.js progress charts + series query, README, cross-platform browser launcher + test, native-review correction + advisory follow-ups | Feature complete |
 
-| # | Branch | Commits | Authored lines | Depends on |
-| --- | --- | --- | --- | --- |
-| 1 | `feat/ldvdt-foundation` | `aa8c85e..8589d20` | ~1,586 | — |
-| 2 | `feat/ldvdt-practice-slice` | `ade07e6` | ~1,581 | PR 1 |
-| 3 | `feat/ldvdt-keyboard-accent` | `a54d727` | ~733 | PR 2 |
-| 4 | `feat/ldvdt-charts-docs` | `7bee87f..HEAD` | ~771 | PR 3 |
+## Assets
 
-No cohesive split brings every slice under the advisory 400-line budget without
-deleting tests or docs, or splitting a work unit from the tests that verify it.
-The four slices above are the single honest slicing pass: one deliverable per
-slice, tests and docs kept with the unit they verify.
+`resources/font/**` (42 binary files) and `resources/colors/**` are theme assets
+from the project owner. They travel in their own commit
+`b3f15af chore: add theme assets` (separated from the docs commit) and are not
+used by the trainer yet.
 
-### PR 1 — Foundation
+## Review
 
-- **Scope:** module scaffold, `docs/layout.yaml` home-row correction, domain
-  keyboard/level model and generator, corpus loader, storage port and SQLite
-  adapter, configuration, server bootstrap, embedded asset wiring.
-- **End state:** the binary starts and serves `/status/health`; no practice UI.
-- **Out of scope:** HTTP trainer routes, templ UI, typing engine.
+Two native reviews were approved under RDD:
 
-```
-feature tracker: feat/ldvdt-trainer (draft)
-└── PR 1  feat/ldvdt-foundation  📍
-```
+1. `review-658f904231a38014` — readability + reliability → refuter →
+   correction (critical `xdg-open` regression restored) → approved.
+2. `review-480d3c91c6da676b` — delta of advisory + docs fixes → approved.
 
-### PR 2 — Practice slice
+## Resolved blockers
 
-- **Scope:** templ SPA shell and ISO keyboard, stylesheet, client typing engine,
-  trainer handlers and use cases, end-to-end level 1 test.
-- **End state:** a full practice works from the browser for level 1.
-- **Out of scope:** accents, charts.
+All five pre-delivery blockers are cleared:
 
-```
-feature tracker: feat/ldvdt-trainer (draft)
-└── PR 1  feat/ldvdt-foundation
-    └── PR 2  feat/ldvdt-practice-slice  📍
-```
+1. ~~Remote empty / no default branch~~ → default branch is `main`.
+2. ~~No approved issue~~ → issue #1 carries `status:approved`.
+3. ~~No `type:*` labels~~ → `type:*` and `status:approved` labels created.
+4. ~~`gh` not installed~~ → `gh` v2.102.0 installed.
+5. ~~Owner assets mixed with a docs commit~~ → assets in their own commit `b3f15af`.
 
-### PR 3 — Keyboard polish and accented characters
+## Remaining
 
-- **Scope:** word spacing and wrapping, spacebar highlight, decorative ISO
-  modifier keys, uniform row widths with the real ISO Enter and super keys,
-  dead-key accent support and the browser dead-key composition fix.
-- **End state:** levels 3 and 4 are playable, including `á é í ó ú` and `Á É Í Ó Ú`.
-- **Out of scope:** charts, README.
-
-```
-feature tracker: feat/ldvdt-trainer (draft)
-└── PR 1  feat/ldvdt-foundation
-    └── PR 2  feat/ldvdt-practice-slice
-        └── PR 3  feat/ldvdt-keyboard-accent  📍
-```
-
-### PR 4 — Charts, docs and review fixes
-
-- **Scope:** Chart.js progress charts and series query, README, cross-platform
-  browser launcher with its test, the approved native review correction, and the
-  advisory follow-ups.
-- **End state:** the feature is complete.
-- **Review note:** `resources/font/**` (42 binaries) and `resources/colors/**`
-  travel in their own commit, `chore: add theme assets`, right after the docs
-  commit. They are still inside this slice; move them to a separate PR if a
-  cleaner split is preferred.
-
-```
-feature tracker: feat/ldvdt-trainer (draft)
-└── PR 1  feat/ldvdt-foundation
-    └── PR 2  feat/ldvdt-practice-slice
-        └── PR 3  feat/ldvdt-keyboard-accent
-            └── PR 4  feat/ldvdt-charts-docs  📍
-```
-
-## Preparation commands (local, no remote writes)
-
-The current branch holds every commit, so free the tracker name first:
-
-```bash
-git branch feat/ldvdt-trainer main                       # tracker, empty
-git branch feat/ldvdt-foundation      8589d20
-git branch feat/ldvdt-practice-slice  ade07e6
-git branch feat/ldvdt-keyboard-accent a54d727
-git branch feat/ldvdt-charts-docs     HEAD
-```
-
-## Delivery commands (require explicit authorization, one per action)
-
-```bash
-# 1. Authorized target
-git remote add origin <host>:<owner>/ldvdt.git
-
-# 2. Tracker branch (no PR content; draft/no-merge tracker PR targets the default branch)
-git push -u origin feat/ldvdt-trainer
-
-# 3. Children, in order; each PR targets the branch above it
-git push -u origin feat/ldvdt-foundation
-git push -u origin feat/ldvdt-practice-slice
-git push -u origin feat/ldvdt-keyboard-accent
-git push -u origin feat/ldvdt-charts-docs
-
-# 4. PRs (base is the branch one row up; PR 1 targets the tracker)
-gh pr create --draft --repo <owner>/ldvdt --base feat/ldvdt-trainer \
-  --head feat/ldvdt-foundation --title "feat: ldvdt foundation" \
-  --body-file odd/pr/ldvdt-trainer-pr.md
-# # PR 1 targets main; PR 2 targets PR 1's branch; and so on.
-# The tracker PR is draft/no-merge and only tracks the chain.
-```
-
-## Blockers before any of this
-
-1. **The remote repository is empty** — no default branch exists, so the first
-   push decides it. Push `master` first so the tracker and PR bases have a real
-   integration branch; do not push the tracker first.
-2. **No approved issue** — the target policy requires `status:approved`; the body
-   carries a `Refs #<issue>` placeholder. The `status:approved` label itself must
-   be created in the repository.
-3. **No `type:*` label evidence** — the labels do not exist yet on an empty repo.
-4. **`gh` is not installed** — PR creation must use the web UI until it is.
-5. ~~`845806e` mixes owner assets with a docs commit~~ — **resolved**: the assets
-   now live in their own commit `chore: add theme assets`, and the docs commit
-   carries only its one-line log entry.
+- **Human validation:** run `go run ./cmd/ldvdt` and visually confirm the
+  keyboard, dead-key accents and charts (not yet verified in a real browser).
+- Optional: add CI (build + vet + tests + cross-compile).

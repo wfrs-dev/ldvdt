@@ -1,19 +1,15 @@
-<!-- Prepared PR candidate for feat/ldvdt-trainer.
-     Not deliverable yet: no git remote is configured and no approved issue exists.
-     Pending: choose the delivery strategy (single PR vs chained PRs). -->
+<!-- PR body for feat/ldvdt-trainer — delivered via the feature-branch chain
+     (issue #1 → PR #2..#6), merged into main. -->
 
 ## Linked issue
 
-<!-- BLOCKER: the target policy requires an issue carrying status:approved.
-     Replace the placeholder and pick the reference form with the human:
-     Closes/Fixes/Resolves for a closing reference, Refs for non-closing. -->
-Refs #<issue>
+Closes #1 — "feat: ldvdt keyboard layout trainer" (`status:approved`)
 
 ## PR type
 
 - [x] New feature
 
-<!-- Add exactly one label: type:feature -->
+<!-- label: type:feature -->
 
 ## Summary
 
@@ -56,16 +52,15 @@ Refs #<issue>
 | `GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build ./cmd/ldvdt` | pass |
 | `GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build ./cmd/ldvdt` | pass |
 | Binary smoke test | `/` renders the SPA, `/practice` returns level words, `POST /practice` persists and returns updated stats |
-| Native review (RDD on) | lineage `review-658f904231a38014` approved after correcting one critical finding |
+| Native review (RDD on) | `review-658f904231a38014` and `review-480d3c91c6da676b` both approved |
 
 Shellcheck: not applicable — no shell scripts changed.
 
 ## Review notes
 
 - `resources/font/**` (42 binary files) and `resources/colors/**` are theme
-  assets coming from the project owner. They were captured in commit `845806e`
-  together with the review log and are **not used by the trainer yet**; they
-  can be moved to their own commit or PR before submission if preferred.
+  assets from the project owner. They travel in their own commit
+  `b3f15af chore: add theme assets` and are not used by the trainer yet.
 - `resources/*.dat` are the practice corpora (6,233 lines of data), not source.
 - Accented characters rely on the browser delivering either the composed
   character or `Dead` plus the base letter; both paths are handled and pinned by
@@ -77,5 +72,5 @@ Shellcheck: not applicable — no shell scripts changed.
 - [x] No `Co-Authored-By` trailers
 - [x] Tests added or updated with the behaviour they cover
 - [x] Documentation updated (`README.md`)
-- [ ] Linked issue exists and carries `status:approved` — **pending**
-- [ ] Exactly one `type:*` label added — **pending** (needs the target repository)
+- [x] Linked issue #1 exists and carries `status:approved`
+- [x] Exactly one `type:feature` label added
