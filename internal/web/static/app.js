@@ -21,6 +21,9 @@
     accents: {}, // accented char -> { dead, base }
   };
 
+  // A dead key was pressed and its composition is not resolved yet.
+  let pendingDead = false;
+
   // Build a char -> key lookup from the on-screen keyboard DOM.
   function buildKeyMap() {
     const map = new Map();
@@ -77,6 +80,7 @@
 
   function reset() {
     state.active = false;
+    pendingDead = false;
     state.step = 0;
     state.charPos = 0;
     state.correct = 0;
@@ -112,11 +116,34 @@
     state.active = true;
   }
 
+  // composeTyped resolves the character the user actually meant.
+  //
+  // Browsers disagree on dead keys: some deliver the composed character
+  // ("á"), others deliver "Dead" followed by the base letter ("a"). When a dead
+  // key is pending and the delivered letter is the expected character's base,
+  // the expected accented character is what the user typed. Otherwise the
+  // delivered key stands, so a wrong vowel still counts as a mistake.
+  function composeTyped(deadPending, expected, key, accents) {
+    if (!deadPending) return key;
+    const hint = accents[expected];
+    if (hint && key === hint.base) return expected;
+    return key;
+  }
+
+  // isDeadKeyChar reports whether the delivered key is one of the layout's dead
+  // keys (some platforms report the accent character instead of "Dead").
+  function isDeadKeyChar(key, accents) {
+    for (const ch in accents) {
+      if (accents[ch].dead === key) return true;
+    }
+    return false;
+  }
+
   function isIgnoredKey(e) {
     return e.key === "Shift" || e.key === "Control" || e.key === "Alt" ||
       e.key === "Meta" || e.key === "AltGraph" || e.key === "CapsLock" ||
       e.key === "Backspace" || e.key === "Tab" || e.key === "Escape" ||
-      e.key === "Dead";
+      e.key === "Unidentified" || e.key === "Dead";
   }
 
   function mean(values) {
@@ -133,6 +160,7 @@
 
   function finish() {
     state.active = false;
+    pendingDead = false;
     clearCurrentKeys();
     const now = performance.now();
     const durationMS = state.startTs === null ? 0 : Math.round(now - state.startTs);
@@ -184,6 +212,15 @@
 
   function onKeydown(e) {
     if (!state.active) return;
+
+    // Dead key: remember it and wait for the letter that completes it.
+    if (e.key === "Dead" || isDeadKeyChar(e.key, state.accents)) {
+      pendingDead = true;
+      return;
+    }
+    // Input method composition in progress; the result arrives later.
+    if (e.key === "Process") return;
+
     if (isIgnoredKey(e)) return;
 
     // Prevent the page from scrolling on space.
@@ -192,7 +229,8 @@
     const expected = state.target[state.step];
     if (expected === undefined) return;
 
-    const typed = e.key;
+    const typed = composeTyped(pendingDead, expected, e.key, state.accents);
+    pendingDead = false;
     const now = performance.now();
     if (state.startTs === null) state.startTs = now;
     if (state.lastTs !== null) state.intervals.push(now - state.lastTs);
@@ -231,5 +269,5 @@
     }
   });
 
-  window.ldvdt = { startPractice };
+  window.ldvdt = { startPractice, composeTyped };
 })();
