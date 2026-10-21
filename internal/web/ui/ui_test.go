@@ -147,10 +147,10 @@ func TestSeriesJSON(t *testing.T) {
 	}
 
 	practices := []domain.Practice{
-		// Yesterday: the label must carry the date so points from different days
-		// are distinguishable on the chart axis.
+		// Yesterday: the label carries the full date and 12-hour time so points
+		// from different days (and years) stay distinguishable on the axis.
 		{CompletedAt: time.Date(2026, 10, 19, 23, 30, 0, 0, time.UTC), WPM: 22.46, Accuracy: 0.9149, Consistency: 30},
-		// Today: time only.
+		// Today: 12-hour time only.
 		{CompletedAt: time.Date(2026, 10, 20, 10, 0, 0, 0, time.UTC), WPM: 28.0, Accuracy: 0.955, Consistency: 25},
 	}
 
@@ -158,7 +158,7 @@ func TestSeriesJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SeriesJSON error: %v", err)
 	}
-	want := `[{"label":"19/10 23:30","wpm":22.5,"acc":91.5},{"label":"10:00","wpm":28,"acc":95.5}]`
+	want := `[{"label":"19/10/2026 11:30PM","wpm":22.5,"acc":91.5},{"label":"10:00AM","wpm":28,"acc":95.5}]`
 	if got != want {
 		t.Errorf("SeriesJSON =\n %s\nwant\n %s", got, want)
 	}

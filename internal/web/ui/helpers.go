@@ -46,13 +46,13 @@ type progressPoint struct {
 }
 
 // chartLabel renders a practice timestamp for the chart axis. Today's practices
-// show the time only; older ones also carry the date, so points from different
-// days are distinguishable.
+// show the 12-hour time only; older ones also carry the full date
+// (day/month/year), so points from different days and years stay distinguishable.
 func chartLabel(at, now time.Time) string {
 	if at.Year() == now.Year() && at.YearDay() == now.YearDay() {
-		return at.Format("15:04")
+		return at.Format("03:04PM")
 	}
-	return at.Format("02/01 15:04")
+	return at.Format("02/01/2006 03:04PM")
 }
 
 // SeriesJSON serialises the practices to the compact JSON the client chart
