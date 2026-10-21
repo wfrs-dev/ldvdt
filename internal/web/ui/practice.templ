@@ -5,10 +5,11 @@ import (
 )
 
 // Practice renders the words to type as a fragment swapped into #words by htmx.
-// The client engine reads the words from the DOM and the level/lang/count and
-// the level's practice keys (data-keys) from the data attributes.
-templ Practice(words []string, level int, lang string, count int, newKeys string) {
-	<div id="words" data-level={ strconv.Itoa(level) } data-lang={ lang } data-count={ strconv.Itoa(count) } data-keys={ newKeys }>
+// The client engine reads the words from the DOM and the level/lang/count, the
+// level's practice keys (data-keys) and the dead-key hints for accented
+// characters (data-accents) from the data attributes.
+templ Practice(words []string, level int, lang string, count int, newKeys string, accents string) {
+	<div id="words" data-level={ strconv.Itoa(level) } data-lang={ lang } data-count={ strconv.Itoa(count) } data-keys={ newKeys } data-accents={ accents }>
 		<div class="words-row">
 			for _, w := range words {
 				<span class="word">

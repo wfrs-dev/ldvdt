@@ -111,7 +111,7 @@ func TestKeyboardRowsSameWidth(t *testing.T) {
 }
 
 func TestPracticeRendersChars(t *testing.T) {
-	html := render(t, Practice([]string{"isla", "otro"}, 1, "es", 2, "aoeiudrtns"))
+	html := render(t, Practice([]string{"isla", "otro"}, 1, "es", 2, "aoeiudrtns", ""))
 
 	if !strings.Contains(html, `data-level="1"`) {
 		t.Error("missing data-level")
@@ -124,6 +124,9 @@ func TestPracticeRendersChars(t *testing.T) {
 	}
 	if !strings.Contains(html, `data-keys="aoeiudrtns"`) {
 		t.Error("missing data-keys")
+	}
+	if !strings.Contains(html, `data-accents=`) {
+		t.Error("missing data-accents attribute")
 	}
 	// Two words render as two distinct word spans (visual spacing/wrapping is CSS).
 	if got := strings.Count(html, `<span class="word">`); got != 2 {

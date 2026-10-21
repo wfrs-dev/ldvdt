@@ -126,3 +126,49 @@ func TestLevelNewCharsOrdering(t *testing.T) {
 		t.Errorf("level 3 NewChars = %q, want %q", got, "ñ,.pyfgchláéíóú")
 	}
 }
+
+func TestFindCharAccents(t *testing.T) {
+	kb := DefaultKeyboard()
+
+	cases := []struct {
+		ch       rune
+		base     rune
+		baseSh   ShiftState
+		wantDead bool
+	}{
+		{'á', 'a', Normal, true},
+		{'é', 'e', Normal, true},
+		{'í', 'i', Normal, true},
+		{'ó', 'o', Normal, true},
+		{'ú', 'u', Normal, true},
+		{'Á', 'A', Shift, true},
+		{'É', 'E', Shift, true},
+		{'Í', 'I', Shift, true},
+		{'Ó', 'O', Shift, true},
+		{'Ú', 'U', Shift, true},
+		// Direct keys must not become dead-key combinations.
+		{'ñ', 'ñ', Normal, false},
+		{'Ñ', 'Ñ', Shift, false},
+		{'a', 'a', Normal, false},
+	}
+
+	for _, c := range cases {
+		got, ok := kb.FindChar(c.ch)
+		if !ok {
+			t.Errorf("FindChar(%q) not found", c.ch)
+			continue
+		}
+		if got.IsDead() != c.wantDead {
+			t.Fatalf("FindChar(%q) dead = %v, want %v", c.ch, got.IsDead(), c.wantDead)
+		}
+		if got.Key.Char(got.Shift) != c.base || got.Shift != c.baseSh {
+			t.Errorf("FindChar(%q) base = %q/%v, want %q/%v",
+				c.ch, got.Key.Char(got.Shift), got.Shift, c.base, c.baseSh)
+		}
+		if c.wantDead {
+			if d := got.DeadKey.Char(got.DeadShift); d != DeadAccent {
+				t.Errorf("FindChar(%q) dead key = %q, want %q", c.ch, d, DeadAccent)
+			}
+		}
+	}
+}

@@ -1,5 +1,7 @@
 package domain
 
+import "unicode"
+
 // ShiftState describes whether a character is produced with the SHIFT
 // modifier held down (Top) or with a plain key press (Bottom).
 type ShiftState int
@@ -64,37 +66,76 @@ func (kb Keyboard) Keys() []Key {
 
 // CharKey is the key press needed to produce a single character.
 type CharKey struct {
-	Key      Key
-	Shift    ShiftState
-	DeadKey  *Key  // non-nil when the char needs a dead key first (accents)
+	Key       Key
+	Shift     ShiftState
+	DeadKey   *Key // non-nil when the char needs a dead key first (accents)
 	DeadShift ShiftState
 }
 
 // IsDead reports whether the character requires a dead key combination.
 func (c CharKey) IsDead() bool { return c.DeadKey != nil }
 
+// DeadAccent is the dead key used to type acute accents on the ldvd layout.
+const DeadAccent = '´'
+
+// accentBase maps an accented character to the base letter typed after the dead
+// key. Upper case is derived from the character itself.
+var accentBase = map[rune]rune{
+	'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+	'Á': 'a', 'É': 'e', 'Í': 'i', 'Ó': 'o', 'Ú': 'u',
+}
+
 // FindChar returns the key press that produces the given rune, or false if the
-// character is not part of the layout. It searches Bottom first (plain press)
-// and then Top (shift press), so a character that appears both ways resolves to
-// the plain press.
+// character is not part of the layout.
+//
+// A plain key press is preferred over a shifted one, so a character that exists
+// both ways resolves to the plain press. Accented vowels resolve to the dead
+// key plus the vowel key (S14).
 func (kb Keyboard) FindChar(ch rune) (CharKey, bool) {
-	for i := range kb.Rows {
-		for j := range kb.Rows[i].Keys {
-			k := kb.Rows[i].Keys[j]
-			if k.Bottom == ch {
-				return CharKey{Key: k, Shift: Normal}, true
-			}
-		}
+	if ck, ok := kb.findDirect(ch); ok {
+		return ck, true
 	}
-	for i := range kb.Rows {
-		for j := range kb.Rows[i].Keys {
-			k := kb.Rows[i].Keys[j]
-			if k.Top == ch {
-				return CharKey{Key: k, Shift: Shift}, true
-			}
-		}
+
+	base, ok := accentBase[ch]
+	if !ok {
+		return CharKey{}, false
+	}
+	dead, ok := kb.findChar(DeadAccent, Normal)
+	if !ok {
+		return CharKey{}, false
+	}
+	shift := Normal
+	if unicode.IsUpper(ch) {
+		shift = Shift
+	}
+	baseKey, ok := kb.findChar(base, Normal)
+	if !ok {
+		return CharKey{}, false
+	}
+	return CharKey{Key: baseKey, Shift: shift, DeadKey: &dead, DeadShift: Normal}, true
+}
+
+// findDirect looks for a character printed on a key (Bottom first, then Top).
+func (kb Keyboard) findDirect(ch rune) (CharKey, bool) {
+	if k, ok := kb.findChar(ch, Normal); ok {
+		return CharKey{Key: k, Shift: Normal}, true
+	}
+	if k, ok := kb.findChar(ch, Shift); ok {
+		return CharKey{Key: k, Shift: Shift}, true
 	}
 	return CharKey{}, false
+}
+
+// findChar returns the key whose character at the given shift state equals ch.
+func (kb Keyboard) findChar(ch rune, s ShiftState) (Key, bool) {
+	for i := range kb.Rows {
+		for j := range kb.Rows[i].Keys {
+			if kb.Rows[i].Keys[j].Char(s) == ch {
+				return kb.Rows[i].Keys[j], true
+			}
+		}
+	}
+	return Key{}, false
 }
 
 // DefaultKeyboard returns the fixed, generated ldvd layout.

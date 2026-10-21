@@ -2,6 +2,7 @@ package trainer
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -53,7 +54,7 @@ func (h *Handler) Practice(c *echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	return renderComponent(c, ui.Practice(words, lvl.Number, string(lang), len(words), string(lvl.NewChars)))
+	return renderComponent(c, ui.Practice(words, lvl.Number, string(lang), len(words), string(lvl.NewChars), h.accentsJSON(lvl)))
 }
 
 // Submit persists a completed practice and returns the updated stats as JSON.
@@ -78,6 +79,38 @@ func (h *Handler) Progress(c *echo.Context) error {
 		stats = domain.Stats{}
 	}
 	return renderComponent(c, ui.Progress(stats))
+}
+
+// AccentHint tells the client which two keys produce an accented character:
+// the dead key and the base letter (the letter already reflects SHIFT, so
+// "A" means the shifted variant).
+type AccentHint struct {
+	Dead string `json:"dead"`
+	Base string `json:"base"`
+}
+
+// accentsJSON returns the dead-key hints for every accented character allowed
+// at the level, as JSON for the client typing engine (S14).
+func (h *Handler) accentsJSON(level domain.Level) string {
+	hints := make(map[string]AccentHint)
+	for _, ch := range []rune(level.AllowedString()) {
+		ck, ok := h.kb.FindChar(ch)
+		if !ok || !ck.IsDead() {
+			continue
+		}
+		hints[string(ch)] = AccentHint{
+			Dead: string(ck.DeadKey.Char(ck.DeadShift)),
+			Base: string(ck.Key.Char(ck.Shift)),
+		}
+	}
+	if len(hints) == 0 {
+		return ""
+	}
+	data, err := json.Marshal(hints)
+	if err != nil {
+		return ""
+	}
+	return string(data)
 }
 
 func renderComponent(c *echo.Context, component templ.Component) error {

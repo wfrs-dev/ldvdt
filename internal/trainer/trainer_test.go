@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -126,4 +127,102 @@ func TestSubmitRejectsInvalidLevel(t *testing.T) {
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("POST /practice invalid level status = %d, want 400", rec.Code)
 	}
+}
+
+// Level 1 has no accented characters, so no dead-key hints are sent.
+func TestPracticeLevel1HasNoAccentHints(t *testing.T) {
+	e := newTestServer(t)
+	rec := do(e, http.MethodGet, "/practice?level=1&lang=es&count=20", "")
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	if !strings.Contains(rec.Body.String(), `data-accents=""`) {
+		t.Errorf("level 1 should not expose accent hints, got: %s",
+			firstMatch(rec.Body.String(), `data-accents="[^"]*"`))
+	}
+}
+
+// Level 3 introduces acute accents, so the dead key and base letters are sent.
+func TestPracticeLevel3AccentHints(t *testing.T) {
+	e := newTestServer(t)
+	rec := do(e, http.MethodGet, "/practice?level=3&lang=es&count=20", "")
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	raw := firstMatch(rec.Body.String(), `data-accents="([^"]*)"`)
+	if raw == "" {
+		t.Fatalf("missing data-accents in %s", rec.Body.String())
+	}
+
+	// The attribute carries escaped JSON (&#34; for quotes).
+	encoded := strings.TrimSuffix(strings.TrimPrefix(raw, `data-accents="`), `"`)
+	encoded = strings.ReplaceAll(encoded, "&#34;", `"`)
+	encoded = strings.ReplaceAll(encoded, "&amp;", "&")
+
+	var hints map[string]struct {
+		Dead string `json:"dead"`
+		Base string `json:"base"`
+	}
+	if err := json.Unmarshal([]byte(encoded), &hints); err != nil {
+		t.Fatalf("decode accents %q: %v", encoded, err)
+	}
+
+	for _, tc := range []struct{ char, base string }{
+		{"á", "a"}, {"é", "e"}, {"í", "i"}, {"ó", "o"}, {"ú", "u"},
+	} {
+		h, ok := hints[tc.char]
+		if !ok {
+			t.Errorf("missing hint for %q", tc.char)
+			continue
+		}
+		if h.Dead != "´" {
+			t.Errorf("%q dead key = %q, want ´", tc.char, h.Dead)
+		}
+		if h.Base != tc.base {
+			t.Errorf("%q base = %q, want %q", tc.char, h.Base, tc.base)
+		}
+	}
+
+	// Uppercase accents belong to level 4, not level 3.
+	if _, ok := hints["Á"]; ok {
+		t.Error("level 3 should not include Á")
+	}
+}
+
+// Level 4 adds the uppercase accented vowels, which use SHIFT + base letter.
+func TestPracticeLevel4UppercaseAccentHints(t *testing.T) {
+	e := newTestServer(t)
+	rec := do(e, http.MethodGet, "/practice?level=4&lang=es&count=20", "")
+
+	encoded := firstMatch(rec.Body.String(), `data-accents="([^"]*)"`)
+	encoded = strings.ReplaceAll(encoded, "&#34;", `"`)
+
+	var hints map[string]struct {
+		Dead string `json:"dead"`
+		Base string `json:"base"`
+	}
+	if err := json.Unmarshal([]byte(encoded), &hints); err != nil {
+		t.Fatalf("decode accents: %v", err)
+	}
+	if h, ok := hints["Á"]; !ok || h.Base != "A" || h.Dead != "´" {
+		t.Errorf("Á hint = %+v (present=%v), want dead ´ + base A", h, ok)
+	}
+}
+
+// firstMatch returns the first regexp match (group 1 when present).
+func firstMatch(s, pattern string) string {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return ""
+	}
+	m := re.FindStringSubmatch(s)
+	if len(m) > 1 {
+		return m[1]
+	}
+	if len(m) == 1 {
+		return m[0]
+	}
+	return ""
 }

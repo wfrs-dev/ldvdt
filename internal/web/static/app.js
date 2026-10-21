@@ -18,6 +18,7 @@
     level: 1,
     lang: "es",
     count: 20,
+    accents: {}, // accented char -> { dead, base }
   };
 
   // Build a char -> key lookup from the on-screen keyboard DOM.
@@ -36,13 +37,29 @@
     document.querySelectorAll("#keyboard .key.active").forEach((k) => k.classList.remove("active"));
   }
 
+  function clearCurrentKeys() {
+    document.querySelectorAll("#keyboard .key.current").forEach((k) => k.classList.remove("current"));
+  }
+
+  // markKeys adds a class to every key that produces ch: a direct key, or the
+  // pair (dead key + base letter) for an accented character (S14).
+  function markKeys(ch, cls) {
+    const hint = state.accents[ch];
+    if (hint) {
+      const dead = keyMap.get(hint.dead);
+      if (dead) dead.classList.add(cls);
+      const base = keyMap.get(hint.base);
+      if (base) base.classList.add(cls);
+      return;
+    }
+    const k = keyMap.get(ch);
+    if (k) k.classList.add(cls);
+  }
+
   function highlightPracticeKeys(keys) {
     clearActiveKeys();
     if (!keys) return;
-    for (const ch of keys) {
-      const k = keyMap.get(ch);
-      if (k) k.classList.add("active");
-    }
+    for (const ch of keys) markKeys(ch, "active");
   }
 
   function highlightCurrentChar() {
@@ -54,9 +71,8 @@
   }
 
   function highlightKey(ch) {
-    document.querySelectorAll("#keyboard .key.current").forEach((k) => k.classList.remove("current"));
-    const k = keyMap.get(ch);
-    if (k) k.classList.add("current");
+    clearCurrentKeys();
+    markKeys(ch, "current");
   }
 
   function reset() {
@@ -68,7 +84,7 @@
     state.startTs = null;
     state.lastTs = null;
     state.intervals = [];
-    document.querySelectorAll("#keyboard .key.current").forEach((k) => k.classList.remove("current"));
+    clearCurrentKeys();
   }
 
   function startPractice() {
@@ -87,6 +103,7 @@
     state.level = parseInt(root.dataset.level || "1", 10);
     state.lang = root.dataset.lang || "es";
     state.count = parseInt(root.dataset.count || "20", 10);
+    state.accents = root.dataset.accents ? JSON.parse(root.dataset.accents) : {};
 
     highlightPracticeKeys(root.dataset.keys);
     highlightCurrentChar();
@@ -116,7 +133,7 @@
 
   function finish() {
     state.active = false;
-    document.querySelectorAll("#keyboard .key.current").forEach((k) => k.classList.remove("current"));
+    clearCurrentKeys();
     const now = performance.now();
     const durationMS = state.startTs === null ? 0 : Math.round(now - state.startTs);
 
