@@ -32,7 +32,7 @@ Branches are cumulative; each child includes its ancestors.
 | 1 | `feat/ldvdt-foundation` | `a2cc5a3..408c71f` | ~1,586 | — |
 | 2 | `feat/ldvdt-practice-slice` | `aea4dba` | ~1,581 | PR 1 |
 | 3 | `feat/ldvdt-keyboard-accent` | `f1e2f93..cc62f01` | ~733 | PR 2 |
-| 4 | `feat/ldvdt-charts-docs` | `cf44dbb..ce8598c` | ~771 | PR 3 |
+| 4 | `feat/ldvdt-charts-docs` | `cf44dbb..e235cd6` | ~771 | PR 3 |
 
 No cohesive split brings every slice under the advisory 400-line budget without
 deleting tests or docs, or splitting a work unit from the tests that verify it.
@@ -87,8 +87,9 @@ feature tracker: feat/ldvdt-trainer (draft)
   advisory follow-ups.
 - **End state:** the feature is complete.
 - **Review note:** `resources/font/**` (42 binaries) and `resources/colors/**`
-  travel in commit `845806e`; consider moving them to their own commit or PR
-  before submission if the owner prefers a cleaner slice.
+  travel in their own commit, `chore: add theme assets`, right after the docs
+  commit. They are still inside this slice; move them to a separate PR if a
+  cleaner split is preferred.
 
 ```
 feature tracker: feat/ldvdt-trainer (draft)
@@ -108,7 +109,7 @@ git branch feat/ldvdt-trainer master                    # tracker, empty
 git branch feat/ldvdt-foundation      408c71f
 git branch feat/ldvdt-practice-slice  aea4dba
 git branch feat/ldvdt-keyboard-accent cc62f01
-git branch feat/ldvdt-charts-docs     ce8598c
+git branch feat/ldvdt-charts-docs     e235cd6
 ```
 
 ## Delivery commands (require explicit authorization, one per action)
