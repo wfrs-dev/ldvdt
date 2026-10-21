@@ -100,10 +100,15 @@ html, body {
 
 /* ---- centre: words ---- */
 .words-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px; /* visible space between words + wrap to new lines */
+  justify-content: center;
+  align-items: baseline;
   max-width: 720px;
+  width: 100%;
   font-size: 1.6rem;
   line-height: 2.2rem;
-  text-align: center;
 }
 
 .word { white-space: nowrap; }

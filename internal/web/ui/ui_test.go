@@ -66,4 +66,8 @@ func TestPracticeRendersChars(t *testing.T) {
 	if !strings.Contains(html, `data-keys="aoeiudrtns"`) {
 		t.Error("missing data-keys")
 	}
+	// Two words render as two distinct word spans (visual spacing/wrapping is CSS).
+	if got := strings.Count(html, `<span class="word">`); got != 2 {
+		t.Errorf("word spans = %d, want 2", got)
+	}
 }
