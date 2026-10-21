@@ -136,18 +136,29 @@ func TestPracticeRendersChars(t *testing.T) {
 }
 
 func TestSeriesJSON(t *testing.T) {
-	if got := SeriesJSON(nil); got != "[]" {
+	now := time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)
+
+	got, err := SeriesJSON(nil, now)
+	if err != nil {
+		t.Fatalf("SeriesJSON(nil) error: %v", err)
+	}
+	if got != "[]" {
 		t.Errorf("SeriesJSON(nil) = %q, want []", got)
 	}
 
-	base := time.Date(2026, 10, 20, 10, 0, 0, 0, time.UTC)
 	practices := []domain.Practice{
-		{CompletedAt: base, WPM: 22.46, Accuracy: 0.9149, Consistency: 30},
-		{CompletedAt: base.Add(5 * time.Minute), WPM: 28.0, Accuracy: 0.955, Consistency: 25},
+		// Yesterday: the label must carry the date so points from different days
+		// are distinguishable on the chart axis.
+		{CompletedAt: time.Date(2026, 10, 19, 23, 30, 0, 0, time.UTC), WPM: 22.46, Accuracy: 0.9149, Consistency: 30},
+		// Today: time only.
+		{CompletedAt: time.Date(2026, 10, 20, 10, 0, 0, 0, time.UTC), WPM: 28.0, Accuracy: 0.955, Consistency: 25},
 	}
 
-	got := SeriesJSON(practices)
-	want := `[{"label":"10:00","wpm":22.5,"acc":91.5},{"label":"10:05","wpm":28,"acc":95.5}]`
+	got, err = SeriesJSON(practices, now)
+	if err != nil {
+		t.Fatalf("SeriesJSON error: %v", err)
+	}
+	want := `[{"label":"19/10 23:30","wpm":22.5,"acc":91.5},{"label":"10:00","wpm":28,"acc":95.5}]`
 	if got != want {
 		t.Errorf("SeriesJSON =\n %s\nwant\n %s", got, want)
 	}

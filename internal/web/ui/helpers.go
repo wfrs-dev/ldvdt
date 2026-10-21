@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/wfrs-dev/ldvdt/internal/domain"
 )
@@ -44,17 +45,29 @@ type progressPoint struct {
 	Acc   float64 `json:"acc"`
 }
 
+// chartLabel renders a practice timestamp for the chart axis. Today's practices
+// show the time only; older ones also carry the date, so points from different
+// days are distinguishable.
+func chartLabel(at, now time.Time) string {
+	if at.Year() == now.Year() && at.YearDay() == now.YearDay() {
+		return at.Format("15:04")
+	}
+	return at.Format("02/01 15:04")
+}
+
 // SeriesJSON serialises the practices to the compact JSON the client chart
-// reads from the canvas data attribute (S4). Practices must be oldest first.
-func SeriesJSON(practices []domain.Practice) string {
+// reads from the canvas data attribute (S4). Practices must be oldest first and
+// now anchors the labels. A serialisation failure is returned to the caller
+// instead of being hidden behind an empty chart.
+func SeriesJSON(practices []domain.Practice, now time.Time) (string, error) {
 	if len(practices) == 0 {
-		return "[]"
+		return "[]", nil
 	}
 
 	points := make([]progressPoint, len(practices))
 	for i, p := range practices {
 		points[i] = progressPoint{
-			Label: p.CompletedAt.Format("15:04"),
+			Label: chartLabel(p.CompletedAt, now),
 			WPM:   math.Round(p.WPM*10) / 10,
 			Acc:   math.Round(p.Accuracy*1000) / 10,
 		}
@@ -62,7 +75,7 @@ func SeriesJSON(practices []domain.Practice) string {
 
 	data, err := json.Marshal(points)
 	if err != nil {
-		return "[]"
+		return "", fmt.Errorf("encode progress series: %w", err)
 	}
-	return string(data)
+	return string(data), nil
 }

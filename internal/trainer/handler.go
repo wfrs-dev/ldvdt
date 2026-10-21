@@ -3,8 +3,10 @@ package trainer
 import (
 	"bytes"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v5"
@@ -35,8 +37,10 @@ func NewHandler(svc *Service, kb domain.Keyboard) *Handler {
 	return &Handler{svc: svc, kb: kb}
 }
 
-// chartPoints is how many recent practices the progress chart plots.
-const chartPoints = 20
+// chartWindowSize is how many recent practices the progress chart plots. The
+// chart box is about 160px tall, which stays readable at roughly this many
+// points. It is unrelated to the minimum practice length.
+const chartWindowSize = 20
 
 // Index renders the full SPA page.
 func (h *Handler) Index(c *echo.Context) error {
@@ -46,12 +50,12 @@ func (h *Handler) Index(c *echo.Context) error {
 	if err != nil {
 		stats = domain.Stats{}
 	}
-	series, err := h.svc.RecentSeries(ctx, "", chartPoints)
+	series, err := h.svc.RecentSeries(ctx, "", chartWindowSize)
 	if err != nil {
 		series = nil
 	}
 
-	return renderComponent(c, ui.Page(h.kb, h.svc.Levels(), stats, ui.SeriesJSON(series)))
+	return renderComponent(c, ui.Page(h.kb, h.svc.Levels(), stats, seriesFor(series)))
 }
 
 // Practice renders the words fragment for a practice session.
@@ -90,12 +94,12 @@ func (h *Handler) Progress(c *echo.Context) error {
 	if err != nil {
 		stats = domain.Stats{}
 	}
-	series, err := h.svc.RecentSeries(ctx, lang, chartPoints)
+	series, err := h.svc.RecentSeries(ctx, lang, chartWindowSize)
 	if err != nil {
 		series = nil
 	}
 
-	return renderComponent(c, ui.Progress(stats, ui.SeriesJSON(series)))
+	return renderComponent(c, ui.Progress(stats, seriesFor(series)))
 }
 
 // AccentHint tells the client which two keys produce an accented character:
@@ -128,6 +132,17 @@ func (h *Handler) accentsJSON(level domain.Level) string {
 		return ""
 	}
 	return string(data)
+}
+
+// seriesFor encodes the chart series for the page. A serialisation failure is
+// logged and degrades to an empty series; it is never silently swallowed.
+func seriesFor(practices []domain.Practice) string {
+	data, err := ui.SeriesJSON(practices, time.Now())
+	if err != nil {
+		slog.Error("encode progress series", slog.Any("error", err))
+		return "[]"
+	}
+	return data
 }
 
 func renderComponent(c *echo.Context, component templ.Component) error {

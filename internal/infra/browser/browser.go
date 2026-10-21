@@ -1,5 +1,5 @@
-// Package browser opens the user's default web browser (S7), supporting Linux
-// and Windows (and macOS for convenience).
+// Package browser opens the user's default web browser (S7), supporting
+// Windows, Linux and the other Unixes (and macOS for convenience).
 package browser
 
 import (
@@ -8,15 +8,16 @@ import (
 )
 
 // commandFor returns the program and arguments that open url in the default
-// browser for the given GOOS. It is separated from Open so the platform mapping
-// can be tested without launching anything.
+// browser for the given GOOS. Windows uses rundll32, macOS uses open, and Linux
+// shares xdg-open with every other Unix. It is separated from Open so the
+// platform mapping can be tested without launching anything.
 func commandFor(goos, url string) (string, []string, error) {
 	switch goos {
 	case "windows":
 		return "rundll32", []string{"url.dll,FileProtocolHandler", url}, nil
 	case "darwin":
 		return "open", []string{url}, nil
-	default: // linux and other unixes, as before the refactor
+	default: // Linux and every other Unix use the XDG opener.
 		return "xdg-open", []string{url}, nil
 	}
 }
