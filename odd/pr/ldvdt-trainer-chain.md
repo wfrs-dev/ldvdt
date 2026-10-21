@@ -4,10 +4,11 @@ Strategy: **`chain_strategy=feature-branch-chain`**, selected by the project own
 
 ## Status
 
-**Nothing is pushed and no PR exists.** This repository has no `git remote`
-configured, so the target host, `owner/repo` and default branch are unknown, and
-no issue can be linked. Every remote operation below needs its own explicit
-authorization.
+**Nothing is pushed and no PR exists.** The target is configured as
+`origin = git@github.com:wfrs-dev/ldvdt.git` and is reachable over SSH, but the
+remote repository is **completely empty** (`git ls-remote origin` returns no
+refs): there is no default branch, no label and no issue yet. Every remote
+operation below still needs its own explicit authorization.
 
 ## Review budget
 
@@ -134,11 +135,14 @@ gh pr create --draft --repo <owner>/ldvdt --base feat/ldvdt-trainer \
 
 ## Blockers before any of this
 
-1. **No `git remote`** — the target host and `owner/repo` are undefined.
+1. **The remote repository is empty** — no default branch exists, so the first
+   push decides it. Push `master` first so the tracker and PR bases have a real
+   integration branch; do not push the tracker first.
 2. **No approved issue** — the target policy requires `status:approved`; the body
-   carries a `Refs #<issue>` placeholder.
-3. **No `type:*` label evidence** — labels are read from the target repository.
-4. **No default branch verified** — the tracker base must come from target
-   metadata, not from an assumed `main`.
-5. **`845806e` mixes owner assets with a docs commit** — decide whether to move
-   the 42 binaries out first (history rewrite, needs authorization).
+   carries a `Refs #<issue>` placeholder. The `status:approved` label itself must
+   be created in the repository.
+3. **No `type:*` label evidence** — the labels do not exist yet on an empty repo.
+4. **`gh` is not installed** — PR creation must use the web UI until it is.
+5. ~~`845806e` mixes owner assets with a docs commit~~ — **resolved**: the assets
+   now live in their own commit `chore: add theme assets`, and the docs commit
+   carries only its one-line log entry.
