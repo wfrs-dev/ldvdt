@@ -1,0 +1,83 @@
+package ui
+
+import (
+	"strconv"
+
+	"github.com/wfrs-dev/ldvdt/internal/domain"
+)
+
+// Page renders the full SPA shell: progress on the left, practice + keyboard in
+// the centre, and controls on the right (S8).
+templ Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats) {
+	<!DOCTYPE html>
+	<html lang="es">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>ldvdt · entrenador de layout</title>
+		<script src="/static/vendor/htmx.min.js"></script>
+		<script src="/static/vendor/chart.umd.js"></script>
+		<link rel="stylesheet" href="/static/app.css"/>
+		<script defer src="/static/app.js"></script>
+	</head>
+	<body>
+		<div class="app">
+			<aside class="panel panel-left" id="progress-panel">
+				@Progress(stats)
+			</aside>
+			<main class="panel panel-center">
+				<div id="words">
+					<p class="hint">Elegí nivel, idioma y cantidad, y tocá <strong>Empezar</strong>.</p>
+				</div>
+				@Keyboard(kb)
+			</main>
+			<aside class="panel panel-right">
+				@Controls(levels)
+			</aside>
+		</div>
+	</body>
+	</html>
+}
+
+// Controls renders the practice configuration form (level, language, count).
+templ Controls(levels []domain.Level) {
+	<form id="controls" class="controls" hx-get="/practice" hx-target="#words" hx-swap="outerHTML">
+		<label for="level">Nivel</label>
+		<select name="level" id="level">
+			for _, l := range levels {
+				<option value={ strconv.Itoa(l.Number) }>{ strconv.Itoa(l.Number) } · { l.Name }</option>
+			}
+		</select>
+
+		<label for="lang">Idioma</label>
+		<select name="lang" id="lang">
+			<option value="es">Español</option>
+			<option value="en">English</option>
+		</select>
+
+		<label for="count">Palabras</label>
+		<input type="number" name="count" id="count" min="20" value="20"/>
+
+		<button type="submit">Empezar</button>
+	</form>
+}
+
+// Progress renders the user's aggregate progress (S11).
+templ Progress(stats domain.Stats) {
+	<h2>Progreso</h2>
+	<dl class="stats">
+		<dt>Prácticas</dt>
+		<dd>{ strconv.Itoa(stats.TotalPractices) }</dd>
+		<dt>Tiempo total</dt>
+		<dd>{ formatDuration(stats.TotalTimeMS) }</dd>
+		<dt>Mejor WPM</dt>
+		<dd>{ f1(stats.BestWPM) }</dd>
+		<dt>WPM promedio</dt>
+		<dd>{ f1(stats.AvgWPM) }</dd>
+		<dt>Precisión</dt>
+		<dd>{ pct(stats.AvgAccuracy) }</dd>
+		<dt>Consistencia</dt>
+		<dd>{ f1(stats.AvgConsistency) } ms</dd>
+	</dl>
+	<div class="chart-box"><canvas id="progress-chart"></canvas></div>
+}

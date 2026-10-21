@@ -18,6 +18,7 @@ import (
 	"github.com/wfrs-dev/ldvdt/internal/domain"
 	"github.com/wfrs-dev/ldvdt/internal/infra/browser"
 	"github.com/wfrs-dev/ldvdt/internal/infra/storage/sqlite"
+	"github.com/wfrs-dev/ldvdt/internal/trainer"
 	"github.com/wfrs-dev/ldvdt/internal/web/static"
 )
 
@@ -66,9 +67,8 @@ func run() error {
 	srv.AddModule(health.New(Version, time.Now().Unix()))
 	srv.EchoInstance().StaticFS("/static", static.FS)
 
-	// Register the trainer module (T8) here.
-	_ = wordCorpus
-	_ = levels
+	svc := trainer.NewService(store, wordCorpus, levels)
+	srv.AddModule(trainer.NewModule(svc, kb))
 
 	addr := fmt.Sprintf("http://127.0.0.1:%d", cfg.Port)
 	if cfg.OpenBrowser {

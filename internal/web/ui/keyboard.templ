@@ -1,0 +1,32 @@
+package ui
+
+import (
+	"strconv"
+
+	"github.com/wfrs-dev/ldvdt/internal/domain"
+)
+
+// Keyboard renders the full ISO keyboard, coloured by finger (S9). Every key
+// exposes data-row/index/top/bottom so the client typing engine can highlight
+// the key to press for a given character (S14).
+templ Keyboard(kb domain.Keyboard) {
+	<div class="keyboard" id="keyboard">
+		for _, row := range kb.Rows {
+			<div class={ "keyrow keyrow-" + row.Name }>
+				for _, k := range row.Keys {
+					<div class={ keyClass(k) } data-row={ row.Name } data-index={ strconv.Itoa(k.Index) } data-top={ string(k.Top) } data-bottom={ string(k.Bottom) }>
+						<span class="key-top">{ string(k.Top) }</span>
+						<span class="key-bottom">{ string(k.Bottom) }</span>
+					</div>
+				}
+			</div>
+		}
+		<div class="keyrow keyrow-space">
+			<div class="key key-mod finger-LP"><span class="key-bottom">ctrl</span></div>
+			<div class="key key-mod finger-TH"><span class="key-bottom">alt</span></div>
+			<div class="key key-space finger-TH"><span class="key-bottom">espacio</span></div>
+			<div class="key key-mod finger-TH"><span class="key-bottom">altgr</span></div>
+			<div class="key key-mod finger-RP"><span class="key-bottom">ctrl</span></div>
+		</div>
+	</div>
+}
