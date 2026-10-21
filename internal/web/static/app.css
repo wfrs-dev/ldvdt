@@ -1,19 +1,100 @@
 /* ldvdt trainer — layout, keyboard and practice styles */
 
+/* Victor Mono: only the two woff2 faces the UI uses are embedded (S19).
+   The italic face drives the titles, the regular face everything else. */
+@font-face {
+  font-family: "Victor Mono";
+  src: url("/static/fonts/VictorMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Victor Mono";
+  src: url("/static/fonts/VictorMono-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Kanso Mist (dark) and Kanso Pearl (light) adapted to the app's semantic
+   tokens (S20). :root carries the dark theme (the default); [data-theme="light"]
+   overrides it. The colours come from resources/colors/kanso_{dark,light}.toml:
+   primary.background/foreground, normal.*, bright.* and selection.*. */
 :root {
-  --bg: #1a1b26;
-  --panel: #24283b;
-  --panel-2: #2f3349;
-  --text: #c0caf5;
-  --muted: #7c84a8;
-  --accent: #7aa2f7;
-  --correct: #9ece6a;
-  --incorrect: #f7768e;
-  --current: #ff9e64;
+  color-scheme: dark;
+
+  --bg: #22262D;            /* primary.background */
+  --panel: #43464E;         /* selection.background */
+  /* Elevated surface for inputs and the keyboard tray. bright.black (#5C6066)
+     left body text at 3.8:1, below WCAG AA; this tone keeps 8.0:1. */
+  --panel-2: #2a2f37;
+  --text: #C5C9C7;          /* primary.foreground */
+  --muted: #a4a7a4;         /* normal.white */
+  --accent: #7fb4ca;        /* bright.blue */
+  --correct: #87a987;       /* bright.green */
+  --incorrect: #e46876;     /* bright.red */
+  --current: #e6c384;       /* bright.yellow */
+  --mod-border: #43464E;    /* selection.background */
+
+  --key-bg: #1d2126;        /* slightly darker than --bg: recessed key faces */
+  --key-mod-bg: #22262D;    /* primary.background */
+  --key-active-bg: #43464E; /* selection.background */
+  --key-border: #43464E;    /* selection.background */
+  --text-inverse: #14171d;  /* text on accent/current fills */
+  --current-text: #14171d;  /* text on the current-key highlight */
+  --incorrect-bg: rgba(228, 104, 118, 0.18);
+
+  /* finger colours (keyboard top-border accents) */
+  --finger-LP: #e46876;
+  --finger-LR: #e6c384;
+  --finger-LM: #87a987;
+  --finger-LI: #7aa89f;
+  --finger-RI: #7fb4ca;
+  --finger-RM: #938aa9;
+  --finger-RR: #b6927b;
+  --finger-RP: #e46876;
+  --finger-TH: #5C6066;
 
   --key-w: 52px;
   --key-h: 52px;
   --gap: 6px;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f2f1ef;            /* primary.background */
+  --panel: #c9cbd1;         /* selection.background */
+  --panel-2: #f2f1ef;       /* primary.background */
+  --text: #545464;          /* primary.foreground */
+  /* bright.black (#8a8980) only reached 3.1:1 on --bg; this keeps the muted
+     tone but clears WCAG AA at 4.5:1. */
+  --muted: #6f6e66;
+  --accent: #4d699b;        /* normal.blue */
+  --correct: #6f894e;       /* normal.green */
+  --incorrect: #c84053;     /* normal.red */
+  --current: #e98a00;       /* indexed_colors[16] */
+  --mod-border: #8a8980;    /* bright.black */
+
+  --key-bg: #f2f1ef;        /* primary.background */
+  --key-mod-bg: #c9cbd1;    /* selection.background */
+  --key-active-bg: #c9cbd1; /* selection.background */
+  --key-border: #8a8980;    /* bright.black */
+  --text-inverse: #f2f1ef;  /* text on accent/current fills */
+  --current-text: #14171d;  /* text on the current-key highlight */
+  --incorrect-bg: rgba(200, 64, 83, 0.15);
+
+  --finger-LP: #c84053;
+  --finger-LR: #77713f;
+  --finger-LM: #6f894e;
+  --finger-LI: #597b75;
+  --finger-RI: #4d699b;
+  --finger-RM: #b35b79;
+  --finger-RR: #836f4a;
+  --finger-RP: #c84053;
+  --finger-TH: #8a8980;
 }
 
 * { box-sizing: border-box; }
@@ -23,8 +104,11 @@ html, body {
   height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Victor Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
+
+/* Titles in the italic face, everything else regular (S19). */
+h1, h2, h3 { font-style: italic; }
 
 .app {
   display: grid;
@@ -59,6 +143,14 @@ html, body {
 }
 
 /* ---- first row: controls ---- */
+.panel-controls {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
 .controls {
   display: flex;
   flex-direction: row;
@@ -77,7 +169,7 @@ html, body {
 .controls input {
   background: var(--panel-2);
   color: var(--text);
-  border: 1px solid #3b4261;
+  border: 1px solid var(--key-border);
   border-radius: 6px;
   padding: 8px;
   font-size: 1rem;
@@ -86,7 +178,7 @@ html, body {
 .controls button {
   margin-top: 0;
   background: var(--accent);
-  color: #1a1b26;
+  color: var(--text-inverse);
   border: none;
   border-radius: 6px;
   padding: 10px;
@@ -96,6 +188,21 @@ html, body {
 }
 
 .controls button:hover { filter: brightness(1.1); }
+
+/* theme toggle: sits to the right of the controls form */
+#theme-toggle {
+  margin-left: auto;
+  background: var(--accent);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#theme-toggle:hover { filter: brightness(1.1); }
 
 /* ---- third row: progress ---- */
 .panel-progress {
@@ -142,9 +249,9 @@ html, body {
 .word { white-space: nowrap; }
 
 .char { border-radius: 3px; padding: 0 1px; }
-.char.current { background: var(--current); color: #1a1b26; }
+.char.current { background: var(--current); color: var(--current-text); }
 .char.correct { color: var(--correct); }
-.char.incorrect { color: var(--incorrect); background: rgba(247, 118, 142, 0.15); }
+.char.incorrect { color: var(--incorrect); background: var(--incorrect-bg); }
 
 .hint { color: var(--muted); text-align: center; max-width: 480px; }
 
@@ -177,8 +284,8 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 0;
-  background: #1a1b26;
-  border: 1px solid #3b4261;
+  background: var(--key-bg);
+  border: 1px solid var(--key-border);
   cursor: default;
   user-select: none;
   transition: transform 60ms ease, box-shadow 60ms ease, background 60ms ease;
@@ -189,19 +296,19 @@ html, body {
 .key-bottom { font-size: 0.95rem; color: var(--text); line-height: 1.1; }
 
 /* finger colours (top border accent) */
-.finger-LP { border-top: 3px solid #f7768e; }
-.finger-LR { border-top: 3px solid #ff9e64; }
-.finger-LM { border-top: 3px solid #e0af68; }
-.finger-LI { border-top: 3px solid #9ece6a; }
-.finger-RI { border-top: 3px solid #2ac3de; }
-.finger-RM { border-top: 3px solid #7aa2f7; }
-.finger-RR { border-top: 3px solid #bb9af7; }
-.finger-RP { border-top: 3px solid #f7768e; }
-.finger-TH { border-top: 3px solid #565f89; }
+.finger-LP { border-top: 3px solid var(--finger-LP); }
+.finger-LR { border-top: 3px solid var(--finger-LR); }
+.finger-LM { border-top: 3px solid var(--finger-LM); }
+.finger-LI { border-top: 3px solid var(--finger-LI); }
+.finger-RI { border-top: 3px solid var(--finger-RI); }
+.finger-RM { border-top: 3px solid var(--finger-RM); }
+.finger-RR { border-top: 3px solid var(--finger-RR); }
+.finger-RP { border-top: 3px solid var(--finger-RP); }
+.finger-TH { border-top: 3px solid var(--finger-TH); }
 
 /* highlight states applied by the typing engine */
 .key.active {
-  background: #2f3349;
+  background: var(--key-active-bg);
   box-shadow: inset 0 0 0 2px var(--accent);
 }
 
@@ -211,7 +318,7 @@ html, body {
   transform: translateY(2px);
 }
 .key.current .key-top,
-.key.current .key-bottom { color: #1a1b26; }
+.key.current .key-bottom { color: var(--current-text); }
 
 /* width units: flex-grow proportional to the key's physical width */
 .key[data-w="1"]    { flex-grow: 1; }
@@ -223,7 +330,7 @@ html, body {
 
 /* decorative modifier keys: same neutral colour */
 .key-mod {
-  background: #232739;
+  background: var(--key-mod-bg);
   border-color: var(--mod-border);
 }
 .key-mod .key-bottom { font-size: 0.72rem; color: var(--muted); }

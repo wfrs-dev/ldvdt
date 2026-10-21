@@ -11,11 +11,22 @@ import (
 // (aggregate stats plus the chart) at the bottom.
 templ Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats, series string) {
 	<!DOCTYPE html>
-	<html lang="es">
+	<html lang="es" data-theme="dark">
 	<head>
 		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 		<title>ldvdt · entrenador de layout</title>
+		<script>
+			// Apply the saved theme before first paint to avoid flashing the
+			// wrong theme (S20). The SSR default above is dark.
+			(function () {
+				try {
+					var theme = localStorage.getItem("ldvdt-theme");
+					if (theme !== "light" && theme !== "dark") theme = "dark";
+					document.documentElement.setAttribute("data-theme", theme);
+				} catch (e) {}
+			})();
+		</script>
 		<script src="/static/vendor/htmx.min.js"></script>
 		<script src="/static/vendor/chart.umd.js"></script>
 		<link rel="stylesheet" href="/static/app.css"/>
@@ -25,6 +36,7 @@ templ Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats, series
 		<div class="app">
 			<section class="panel panel-controls">
 				@Controls(levels)
+				<button type="button" id="theme-toggle" aria-label="Cambiar a tema claro">Tema claro</button>
 			</section>
 			<main class="panel panel-center">
 				<div id="words">

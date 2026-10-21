@@ -6,5 +6,5 @@ import "embed"
 
 // FS holds the static web assets.
 //
-//go:embed vendor app.css app.js
+//go:embed vendor app.css app.js fonts
 var FS embed.FS

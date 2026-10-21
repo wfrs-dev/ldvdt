@@ -275,9 +275,34 @@
     }
   }
 
+  // cssVar reads a theme colour from the document's computed style so the
+  // chart follows the active theme (S20). Fallbacks keep the chart readable
+  // when the stylesheet or getComputedStyle is unavailable (e.g. in tests).
+  function cssVar(name, fallback) {
+    try {
+      if (typeof getComputedStyle === "undefined") return fallback;
+      const style = getComputedStyle(document.documentElement);
+      if (!style) return fallback;
+      const value = style.getPropertyValue(name);
+      return (value && value.trim()) || fallback;
+    } catch (err) {
+      return fallback;
+    }
+  }
+
+  // hexToRgba converts a #rrggbb colour to an rgba() with the given alpha so
+  // the chart fills can reuse the theme accent/correct colours at low opacity.
+  function hexToRgba(hex, alpha) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+    if (!m) return hex;
+    const n = parseInt(m[1], 16);
+    return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + alpha + ")";
+  }
+
   // renderProgressChart (re)builds the chart from the series embedded by the
   // server. htmx replaces the canvas on every /progress swap, so the previous
-  // Chart.js instance is destroyed first.
+  // Chart.js instance is destroyed first. Colours are read from the CSS
+  // variables at render time, so a theme change re-renders with the new palette.
   function renderProgressChart() {
     const canvas = document.getElementById("progress-chart");
     if (!canvas || typeof Chart === "undefined") return;
@@ -290,6 +315,11 @@
     const series = parseSeries(canvas);
     if (series.length === 0) return;
 
+    const accent = cssVar("--accent", "#7fb4ca");
+    const correct = cssVar("--correct", "#87a987");
+    const text = cssVar("--text", "#c5c9c7");
+    const muted = cssVar("--muted", "#a4a7a4");
+
     progressChart = new Chart(canvas, {
       type: "line",
       data: {
@@ -298,8 +328,8 @@
           {
             label: "WPM",
             data: series.map((p) => p.wpm),
-            borderColor: "#7aa2f7",
-            backgroundColor: "rgba(122,162,247,0.15)",
+            borderColor: accent,
+            backgroundColor: hexToRgba(accent, 0.15),
             tension: 0.3,
             fill: true,
             yAxisID: "y",
@@ -307,8 +337,8 @@
           {
             label: "Precisión %",
             data: series.map((p) => p.acc),
-            borderColor: "#9ece6a",
-            backgroundColor: "rgba(158,206,106,0.12)",
+            borderColor: correct,
+            backgroundColor: hexToRgba(correct, 0.12),
             tension: 0.3,
             fill: false,
             yAxisID: "y1",
@@ -321,30 +351,92 @@
         interaction: { mode: "index", intersect: false },
         plugins: {
           legend: {
-            labels: { color: "#c0caf5", boxWidth: 12, font: { size: 10 } },
+            labels: { color: text, boxWidth: 12, font: { size: 10 } },
           },
         },
         scales: {
           x: {
-            ticks: { color: "#7c84a8", maxRotation: 0, autoSkip: true, font: { size: 9 } },
-            grid: { color: "rgba(124,132,168,0.15)" },
+            ticks: { color: muted, maxRotation: 0, autoSkip: true, font: { size: 9 } },
+            grid: { color: hexToRgba(muted, 0.15) },
           },
           y: {
             position: "left",
             beginAtZero: true,
-            ticks: { color: "#7aa2f7", font: { size: 9 } },
-            grid: { color: "rgba(124,132,168,0.15)" },
+            ticks: { color: accent, font: { size: 9 } },
+            grid: { color: hexToRgba(muted, 0.15) },
           },
           y1: {
             position: "right",
             min: 0,
             max: 100,
-            ticks: { color: "#9ece6a", font: { size: 9 } },
+            ticks: { color: correct, font: { size: 9 } },
             grid: { drawOnChartArea: false },
           },
         },
       },
     });
+  }
+
+  // ---- theme toggle (S20) ----
+
+  const THEME_KEY = "ldvdt-theme";
+
+  function currentTheme() {
+    const el = document.documentElement;
+    if (!el) return "dark";
+    return el.getAttribute("data-theme") === "light" ? "light" : "dark";
+  }
+
+  function savedTheme() {
+    try {
+      if (typeof localStorage === "undefined") return null;
+      const theme = localStorage.getItem(THEME_KEY);
+      return theme === "light" || theme === "dark" ? theme : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function persistTheme(theme) {
+    try {
+      if (typeof localStorage !== "undefined") localStorage.setItem(THEME_KEY, theme);
+    } catch (err) {
+      // Storage can be unavailable (private mode); the toggle still works.
+    }
+  }
+
+  // setToggleLabel keeps the button's accessible label in sync with the theme:
+  // it announces the action clicking will perform, not the current state.
+  function setToggleLabel(theme) {
+    const toggle = document.getElementById("theme-toggle");
+    if (!toggle) return;
+    const toLight = theme !== "light";
+    const label = toLight ? "Cambiar a tema claro" : "Cambiar a tema oscuro";
+    const text = toLight ? "Tema claro" : "Tema oscuro";
+    toggle.setAttribute("aria-label", label);
+    toggle.textContent = text;
+  }
+
+  function applyTheme(theme) {
+    const el = document.documentElement;
+    const previous = currentTheme();
+    if (el) el.setAttribute("data-theme", theme);
+    setToggleLabel(theme);
+    if (previous !== theme) renderProgressChart();
+  }
+
+  function toggleTheme() {
+    const next = currentTheme() === "light" ? "dark" : "light";
+    persistTheme(next);
+    applyTheme(next);
+  }
+
+  // initTheme reuses the persisted choice (normally already applied by the
+  // inline head script before first paint) and syncs the toggle label.
+  function initTheme() {
+    const saved = savedTheme();
+    if (saved) applyTheme(saved);
+    else setToggleLabel(currentTheme());
   }
 
   document.addEventListener("keydown", onKeydown);
@@ -355,7 +447,11 @@
     if (target.id === "progress-panel") renderProgressChart();
   });
 
+  const themeToggle = document.getElementById("theme-toggle");
+  if (themeToggle) themeToggle.addEventListener("click", toggleTheme);
+
+  initTheme();
   renderProgressChart();
 
-  window.ldvdt = { startPractice, composeTyped, renderProgressChart };
+  window.ldvdt = { startPractice, composeTyped, renderProgressChart, toggleTheme, applyTheme, initTheme };
 })();

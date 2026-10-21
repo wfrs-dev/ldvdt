@@ -84,6 +84,26 @@ func TestPageStacksThreeRows(t *testing.T) {
 	}
 }
 
+// TestPageRendersThemeToggleAndBootstrap pins the theme plumbing the client
+// needs (S20): the manual toggle in the first row and the inline head script
+// that applies the persisted theme before first paint.
+func TestPageRendersThemeToggleAndBootstrap(t *testing.T) {
+	html := renderPage(t)
+
+	if !strings.Contains(html, `id="theme-toggle"`) {
+		t.Error("page missing the theme toggle button")
+	}
+	if !strings.Contains(html, `data-theme="dark"`) {
+		t.Error("page missing the dark default data-theme attribute")
+	}
+	if !strings.Contains(html, `localStorage.getItem("ldvdt-theme")`) {
+		t.Error("inline bootstrap must read the ldvdt-theme localStorage key")
+	}
+	if !strings.Contains(html, `document.documentElement.setAttribute("data-theme", theme)`) {
+		t.Error("inline bootstrap must apply the saved theme before first paint")
+	}
+}
+
 func TestKeyboardHasAllKeys(t *testing.T) {
 	kb := domain.DefaultKeyboard()
 	html := render(t, Keyboard(kb))
