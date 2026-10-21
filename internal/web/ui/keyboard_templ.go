@@ -14,9 +14,12 @@ import (
 	"github.com/wfrs-dev/ldvdt/internal/domain"
 )
 
-// Keyboard renders the full ISO keyboard, coloured by finger (S9). Every key
-// exposes data-row/index/top/bottom so the client typing engine can highlight
-// the key to press for a given character (S14).
+// Keyboard renders the full ISO keyboard, coloured by finger (S9). Every
+// practice key exposes data-row/index/top/bottom so the client typing engine can
+// highlight the key to press for a given character (S14).
+//
+// Modifier keys (tab, caps lock, shifts, backspace, enter) are purely decorative
+// and carry no data attributes, so they never take part in key highlighting.
 func Keyboard(kb domain.Keyboard) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -65,6 +68,24 @@ func Keyboard(kb domain.Keyboard) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
+			if row.Name == "upper" {
+				templ_7745c5c3_Err = modKey("tab", "key-tab").Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			if row.Name == "middle" {
+				templ_7745c5c3_Err = modKey("bloq mayús", "key-caps").Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			if row.Name == "bottom" {
+				templ_7745c5c3_Err = modKey("shift", "key-shift-left").Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
 			for _, k := range row.Keys {
 				var templ_7745c5c3_Var4 = []any{keyClass(k)}
 				templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var4...)
@@ -91,7 +112,7 @@ func Keyboard(kb domain.Keyboard) templ.Component {
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.ResolveAttributeValue(row.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 17, Col: 51}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 29, Col: 51}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6)
 				if templ_7745c5c3_Err != nil {
@@ -104,7 +125,7 @@ func Keyboard(kb domain.Keyboard) templ.Component {
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue(strconv.Itoa(k.Index))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 17, Col: 88}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 29, Col: 88}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 				if templ_7745c5c3_Err != nil {
@@ -117,7 +138,7 @@ func Keyboard(kb domain.Keyboard) templ.Component {
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.ResolveAttributeValue(string(k.Top))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 17, Col: 115}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 29, Col: 115}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
 				if templ_7745c5c3_Err != nil {
@@ -130,7 +151,7 @@ func Keyboard(kb domain.Keyboard) templ.Component {
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(string(k.Bottom))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 17, Col: 148}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 29, Col: 148}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
 				if templ_7745c5c3_Err != nil {
@@ -143,7 +164,7 @@ func Keyboard(kb domain.Keyboard) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(string(k.Top))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 18, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 30, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -156,7 +177,7 @@ func Keyboard(kb domain.Keyboard) templ.Component {
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(string(k.Bottom))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 19, Col: 49}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 31, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -167,12 +188,91 @@ func Keyboard(kb domain.Keyboard) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
+			if row.Name == "numeric" {
+				templ_7745c5c3_Err = modKey("⌫", "key-backspace").Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			if row.Name == "upper" {
+				templ_7745c5c3_Err = modKey("enter", "key-enter").Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			if row.Name == "bottom" {
+				templ_7745c5c3_Err = modKey("shift", "key-shift-right").Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"keyrow keyrow-space\"><div class=\"key key-mod finger-LP\"><span class=\"key-bottom\">ctrl</span></div><div class=\"key key-mod finger-TH\"><span class=\"key-bottom\">alt</span></div><div class=\"key key-space finger-TH\"><span class=\"key-bottom\">espacio</span></div><div class=\"key key-mod finger-TH\"><span class=\"key-bottom\">altgr</span></div><div class=\"key key-mod finger-RP\"><span class=\"key-bottom\">ctrl</span></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"keyrow keyrow-space\"><div class=\"key key-mod key-ctrl\"><span class=\"key-bottom\">ctrl</span></div><div class=\"key key-mod key-alt\"><span class=\"key-bottom\">alt</span></div><div class=\"key key-space key-mod\" data-bottom=\" \"><span class=\"key-bottom\">espacio</span></div><div class=\"key key-mod key-altgr\"><span class=\"key-bottom\">altgr</span></div><div class=\"key key-mod key-ctrl\"><span class=\"key-bottom\">ctrl</span></div></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+// modKey renders a decorative modifier key.
+func modKey(label string, cls string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var12 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var12 == nil {
+			templ_7745c5c3_Var12 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		var templ_7745c5c3_Var13 = []any{"key key-mod " + cls}
+		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var13...)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var14 string
+		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var13).String())
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 1, Col: 0}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var14)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"><span class=\"key-bottom\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var15 string
+		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(label)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/keyboard.templ`, Line: 57, Col: 69}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</span></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

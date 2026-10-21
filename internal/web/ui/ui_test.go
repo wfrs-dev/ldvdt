@@ -49,6 +49,21 @@ func TestKeyboardHasAllKeys(t *testing.T) {
 	if got := strings.Count(html, "class=\"key finger-"); got != 48 {
 		t.Errorf("rendered %d finger keys, want 48", got)
 	}
+
+	// The spacebar must expose data-bottom=" " so the typing engine highlights it.
+	if !strings.Contains(html, `data-bottom=" "`) {
+		t.Error("space key missing data-bottom for highlighting")
+	}
+
+	// Decorative modifier keys for a realistic ISO look.
+	for _, cls := range []string{
+		"key-tab", "key-caps", "key-shift-left", "key-shift-right",
+		"key-backspace", "key-enter",
+	} {
+		if !strings.Contains(html, cls) {
+			t.Errorf("missing decorative key %q", cls)
+		}
+	}
 }
 
 func TestPracticeRendersChars(t *testing.T) {

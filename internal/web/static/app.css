@@ -188,8 +188,27 @@ html, body {
 .key.current .key-bottom { color: #1a1b26; }
 
 .key-wide { width: calc(var(--key-w) * 1.6); }
-.key-space { width: calc(var(--key-w) * 6); }
-.key-mod { width: calc(var(--key-w) * 1.2); }
+
+/* decorative modifier keys: same neutral colour, realistic widths */
+.key-mod {
+  width: calc(var(--key-w) * 1.2);
+  background: #232739;
+  border-color: #465080;
+}
+.key-mod .key-bottom { font-size: 0.72rem; color: var(--muted); }
+
+.key-tab         { width: calc(var(--key-w) * 1.7); }
+.key-caps        { width: calc(var(--key-w) * 2.1); }
+.key-shift-left  { width: calc(var(--key-w) * 2.7); }
+.key-shift-right { width: calc(var(--key-w) * 2.9); }
+.key-backspace   { width: calc(var(--key-w) * 1.9); }
+.key-enter       { width: calc(var(--key-w) * 2.3); }
+.key-ctrl        { width: calc(var(--key-w) * 1.5); }
+.key-alt         { width: calc(var(--key-w) * 1.3); }
+.key-altgr       { width: calc(var(--key-w) * 1.3); }
+
+/* the spacebar is a modifier too, but the widest key (declared last to win) */
+.key-space { width: calc(var(--key-w) * 6.2); }
 
 /* ---- responsive ---- */
 @media (max-width: 900px) {

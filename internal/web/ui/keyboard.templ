@@ -6,27 +6,53 @@ import (
 	"github.com/wfrs-dev/ldvdt/internal/domain"
 )
 
-// Keyboard renders the full ISO keyboard, coloured by finger (S9). Every key
-// exposes data-row/index/top/bottom so the client typing engine can highlight
-// the key to press for a given character (S14).
+// Keyboard renders the full ISO keyboard, coloured by finger (S9). Every
+// practice key exposes data-row/index/top/bottom so the client typing engine can
+// highlight the key to press for a given character (S14).
+//
+// Modifier keys (tab, caps lock, shifts, backspace, enter) are purely decorative
+// and carry no data attributes, so they never take part in key highlighting.
 templ Keyboard(kb domain.Keyboard) {
 	<div class="keyboard" id="keyboard">
 		for _, row := range kb.Rows {
 			<div class={ "keyrow keyrow-" + row.Name }>
+				if row.Name == "upper" {
+					@modKey("tab", "key-tab")
+				}
+				if row.Name == "middle" {
+					@modKey("bloq mayús", "key-caps")
+				}
+				if row.Name == "bottom" {
+					@modKey("shift", "key-shift-left")
+				}
 				for _, k := range row.Keys {
 					<div class={ keyClass(k) } data-row={ row.Name } data-index={ strconv.Itoa(k.Index) } data-top={ string(k.Top) } data-bottom={ string(k.Bottom) }>
 						<span class="key-top">{ string(k.Top) }</span>
 						<span class="key-bottom">{ string(k.Bottom) }</span>
 					</div>
 				}
+				if row.Name == "numeric" {
+					@modKey("⌫", "key-backspace")
+				}
+				if row.Name == "upper" {
+					@modKey("enter", "key-enter")
+				}
+				if row.Name == "bottom" {
+					@modKey("shift", "key-shift-right")
+				}
 			</div>
 		}
 		<div class="keyrow keyrow-space">
-			<div class="key key-mod finger-LP"><span class="key-bottom">ctrl</span></div>
-			<div class="key key-mod finger-TH"><span class="key-bottom">alt</span></div>
-			<div class="key key-space finger-TH"><span class="key-bottom">espacio</span></div>
-			<div class="key key-mod finger-TH"><span class="key-bottom">altgr</span></div>
-			<div class="key key-mod finger-RP"><span class="key-bottom">ctrl</span></div>
+			<div class="key key-mod key-ctrl"><span class="key-bottom">ctrl</span></div>
+			<div class="key key-mod key-alt"><span class="key-bottom">alt</span></div>
+			<div class="key key-space key-mod" data-bottom=" "><span class="key-bottom">espacio</span></div>
+			<div class="key key-mod key-altgr"><span class="key-bottom">altgr</span></div>
+			<div class="key key-mod key-ctrl"><span class="key-bottom">ctrl</span></div>
 		</div>
 	</div>
+}
+
+// modKey renders a decorative modifier key.
+templ modKey(label string, cls string) {
+	<div class={ "key key-mod " + cls }><span class="key-bottom">{ label }</span></div>
 }

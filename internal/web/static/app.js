@@ -116,6 +116,7 @@
 
   function finish() {
     state.active = false;
+    document.querySelectorAll("#keyboard .key.current").forEach((k) => k.classList.remove("current"));
     const now = performance.now();
     const durationMS = state.startTs === null ? 0 : Math.round(now - state.startTs);
 
