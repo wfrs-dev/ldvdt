@@ -35,13 +35,23 @@ func NewHandler(svc *Service, kb domain.Keyboard) *Handler {
 	return &Handler{svc: svc, kb: kb}
 }
 
+// chartPoints is how many recent practices the progress chart plots.
+const chartPoints = 20
+
 // Index renders the full SPA page.
 func (h *Handler) Index(c *echo.Context) error {
-	stats, err := h.svc.Progress(c.Request().Context(), "")
+	ctx := c.Request().Context()
+
+	stats, err := h.svc.Progress(ctx, "")
 	if err != nil {
 		stats = domain.Stats{}
 	}
-	return renderComponent(c, ui.Page(h.kb, h.svc.Levels(), stats))
+	series, err := h.svc.RecentSeries(ctx, "", chartPoints)
+	if err != nil {
+		series = nil
+	}
+
+	return renderComponent(c, ui.Page(h.kb, h.svc.Levels(), stats, ui.SeriesJSON(series)))
 }
 
 // Practice renders the words fragment for a practice session.
@@ -73,12 +83,19 @@ func (h *Handler) Submit(c *echo.Context) error {
 
 // Progress renders the progress panel fragment.
 func (h *Handler) Progress(c *echo.Context) error {
+	ctx := c.Request().Context()
 	lang := domain.Language(c.QueryParam("lang"))
-	stats, err := h.svc.Progress(c.Request().Context(), lang)
+
+	stats, err := h.svc.Progress(ctx, lang)
 	if err != nil {
 		stats = domain.Stats{}
 	}
-	return renderComponent(c, ui.Progress(stats))
+	series, err := h.svc.RecentSeries(ctx, lang, chartPoints)
+	if err != nil {
+		series = nil
+	}
+
+	return renderComponent(c, ui.Progress(stats, ui.SeriesJSON(series)))
 }
 
 // AccentHint tells the client which two keys produce an accented character:

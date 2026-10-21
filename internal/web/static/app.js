@@ -262,12 +262,100 @@
     highlightKey(state.target[state.step]);
   }
 
+  // ---- progress chart (Chart.js) ----
+
+  let progressChart = null;
+
+  function parseSeries(canvas) {
+    try {
+      return JSON.parse(canvas.dataset.series || "[]");
+    } catch (err) {
+      console.error("invalid chart series", err);
+      return [];
+    }
+  }
+
+  // renderProgressChart (re)builds the chart from the series embedded by the
+  // server. htmx replaces the canvas on every /progress swap, so the previous
+  // Chart.js instance is destroyed first.
+  function renderProgressChart() {
+    const canvas = document.getElementById("progress-chart");
+    if (!canvas || typeof Chart === "undefined") return;
+
+    if (progressChart) {
+      progressChart.destroy();
+      progressChart = null;
+    }
+
+    const series = parseSeries(canvas);
+    if (series.length === 0) return;
+
+    progressChart = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels: series.map((p) => p.label),
+        datasets: [
+          {
+            label: "WPM",
+            data: series.map((p) => p.wpm),
+            borderColor: "#7aa2f7",
+            backgroundColor: "rgba(122,162,247,0.15)",
+            tension: 0.3,
+            fill: true,
+            yAxisID: "y",
+          },
+          {
+            label: "Precisión %",
+            data: series.map((p) => p.acc),
+            borderColor: "#9ece6a",
+            backgroundColor: "rgba(158,206,106,0.12)",
+            tension: 0.3,
+            fill: false,
+            yAxisID: "y1",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: {
+            labels: { color: "#c0caf5", boxWidth: 12, font: { size: 10 } },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: "#7c84a8", maxRotation: 0, autoSkip: true, font: { size: 9 } },
+            grid: { color: "rgba(124,132,168,0.15)" },
+          },
+          y: {
+            position: "left",
+            beginAtZero: true,
+            ticks: { color: "#7aa2f7", font: { size: 9 } },
+            grid: { color: "rgba(124,132,168,0.15)" },
+          },
+          y1: {
+            position: "right",
+            min: 0,
+            max: 100,
+            ticks: { color: "#9ece6a", font: { size: 9 } },
+            grid: { drawOnChartArea: false },
+          },
+        },
+      },
+    });
+  }
+
   document.addEventListener("keydown", onKeydown);
   document.body.addEventListener("htmx:afterSwap", (e) => {
-    if (e.detail && e.detail.target && e.detail.target.id === "words") {
-      startPractice();
-    }
+    const target = e.detail && e.detail.target;
+    if (!target) return;
+    if (target.id === "words") startPractice();
+    if (target.id === "progress-panel") renderProgressChart();
   });
 
-  window.ldvdt = { startPractice, composeTyped };
+  renderProgressChart();
+
+  window.ldvdt = { startPractice, composeTyped, renderProgressChart };
 })();

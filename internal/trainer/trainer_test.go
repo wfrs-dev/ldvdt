@@ -226,3 +226,69 @@ func firstMatch(s, pattern string) string {
 	}
 	return ""
 }
+
+// The progress fragment must carry the chart series, oldest first, so the
+// client can plot WPM and accuracy over time (S4).
+func TestProgressIncludesChartSeries(t *testing.T) {
+	e := newTestServer(t)
+
+	for _, wpm := range []string{"20.0", "30.0", "40.0"} {
+		body := `{"level":1,"lang":"es","wordCount":20,"wpm":` + wpm +
+			`,"accuracy":0.9,"consistency":30,"durationMS":60000}`
+		if rec := do(e, http.MethodPost, "/practice", body); rec.Code != http.StatusOK {
+			t.Fatalf("POST /practice status = %d", rec.Code)
+		}
+	}
+
+	rec := do(e, http.MethodGet, "/progress", "")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("GET /progress status = %d", rec.Code)
+	}
+
+	encoded := firstMatch(rec.Body.String(), `data-series="([^"]*)"`)
+	if encoded == "" {
+		t.Fatalf("missing data-series in %s", rec.Body.String())
+	}
+	encoded = strings.ReplaceAll(encoded, "&#34;", `"`)
+	encoded = strings.ReplaceAll(encoded, "&amp;", "&")
+
+	var points []struct {
+		Label string  `json:"label"`
+		WPM   float64 `json:"wpm"`
+		Acc   float64 `json:"acc"`
+	}
+	if err := json.Unmarshal([]byte(encoded), &points); err != nil {
+		t.Fatalf("decode series %q: %v", encoded, err)
+	}
+
+	if len(points) != 3 {
+		t.Fatalf("got %d points, want 3", len(points))
+	}
+	// Oldest first: 20, 30, 40.
+	wantWPM := []float64{20, 30, 40}
+	for i, want := range wantWPM {
+		if points[i].WPM != want {
+			t.Errorf("point %d WPM = %v, want %v", i, points[i].WPM, want)
+		}
+		if points[i].Acc != 90 {
+			t.Errorf("point %d acc = %v, want 90", i, points[i].Acc)
+		}
+		if points[i].Label == "" {
+			t.Errorf("point %d has an empty label", i)
+		}
+	}
+}
+
+// Without practices the chart has an empty series and still renders.
+func TestProgressEmptySeries(t *testing.T) {
+	e := newTestServer(t)
+	rec := do(e, http.MethodGet, "/progress", "")
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	if !strings.Contains(rec.Body.String(), `data-series="[]"`) {
+		t.Errorf("expected empty series, got %s",
+			firstMatch(rec.Body.String(), `data-series="[^"]*"`))
+	}
+}

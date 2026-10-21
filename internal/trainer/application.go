@@ -91,6 +91,26 @@ func (s *Service) Progress(ctx context.Context, lang domain.Language) (domain.St
 	return s.store.Stats(ctx, lang)
 }
 
+// RecentSeries returns the most recent practices of a language ("" means
+// global) ordered oldest first, ready to be plotted (S4).
+func (s *Service) RecentSeries(ctx context.Context, lang domain.Language, limit int) ([]domain.Practice, error) {
+	if lang != "" && !lang.Valid() {
+		return nil, fmt.Errorf("idioma no válido: %q", lang)
+	}
+	if limit <= 0 {
+		return nil, nil
+	}
+
+	practices, err := s.store.RecentPractices(ctx, lang, limit)
+	if err != nil {
+		return nil, err
+	}
+	for i, j := 0, len(practices)-1; i < j; i, j = i+1, j-1 {
+		practices[i], practices[j] = practices[j], practices[i]
+	}
+	return practices, nil
+}
+
 func (s *Service) level(n int) (domain.Level, error) {
 	if n < 1 || n > len(s.levels) {
 		return domain.Level{}, fmt.Errorf("nivel no válido: %d", n)

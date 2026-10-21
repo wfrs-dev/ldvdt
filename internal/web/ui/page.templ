@@ -8,7 +8,7 @@ import (
 
 // Page renders the full SPA shell: progress on the left, practice + keyboard in
 // the centre, and controls on the right (S8).
-templ Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats) {
+templ Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats, series string) {
 	<!DOCTYPE html>
 	<html lang="es">
 	<head>
@@ -23,7 +23,7 @@ templ Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats) {
 	<body>
 		<div class="app">
 			<aside class="panel panel-left" id="progress-panel">
-				@Progress(stats)
+				@Progress(stats, series)
 			</aside>
 			<main class="panel panel-center">
 				<div id="words">
@@ -62,8 +62,10 @@ templ Controls(levels []domain.Level) {
 	</form>
 }
 
-// Progress renders the user's aggregate progress (S11).
-templ Progress(stats domain.Stats) {
+// Progress renders the user's aggregate progress (S11) and the chart series
+// (S4). The series travels as JSON on the canvas so the client can rebuild the
+// Chart.js instance after an htmx swap.
+templ Progress(stats domain.Stats, series string) {
 	<h2>Progreso</h2>
 	<dl class="stats">
 		<dt>Prácticas</dt>
@@ -79,5 +81,7 @@ templ Progress(stats domain.Stats) {
 		<dt>Consistencia</dt>
 		<dd>{ f1(stats.AvgConsistency) } ms</dd>
 	</dl>
-	<div class="chart-box"><canvas id="progress-chart"></canvas></div>
+	<div class="chart-box">
+		<canvas id="progress-chart" data-series={ series }></canvas>
+	</div>
 }

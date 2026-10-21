@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/wfrs-dev/ldvdt/internal/domain"
 )
@@ -28,7 +29,7 @@ func TestPageRenders(t *testing.T) {
 	kb := domain.DefaultKeyboard()
 	levels := domain.BuildLevels(kb)
 
-	html := render(t, Page(kb, levels, domain.Stats{}))
+	html := render(t, Page(kb, levels, domain.Stats{}, "[]"))
 
 	for _, want := range []string{
 		"<div class=\"keyboard\"",
@@ -131,5 +132,34 @@ func TestPracticeRendersChars(t *testing.T) {
 	// Two words render as two distinct word spans (visual spacing/wrapping is CSS).
 	if got := strings.Count(html, `<span class="word">`); got != 2 {
 		t.Errorf("word spans = %d, want 2", got)
+	}
+}
+
+func TestSeriesJSON(t *testing.T) {
+	if got := SeriesJSON(nil); got != "[]" {
+		t.Errorf("SeriesJSON(nil) = %q, want []", got)
+	}
+
+	base := time.Date(2026, 10, 20, 10, 0, 0, 0, time.UTC)
+	practices := []domain.Practice{
+		{CompletedAt: base, WPM: 22.46, Accuracy: 0.9149, Consistency: 30},
+		{CompletedAt: base.Add(5 * time.Minute), WPM: 28.0, Accuracy: 0.955, Consistency: 25},
+	}
+
+	got := SeriesJSON(practices)
+	want := `[{"label":"10:00","wpm":22.5,"acc":91.5},{"label":"10:05","wpm":28,"acc":95.5}]`
+	if got != want {
+		t.Errorf("SeriesJSON =\n %s\nwant\n %s", got, want)
+	}
+}
+
+func TestProgressRendersSeries(t *testing.T) {
+	html := render(t, Progress(domain.Stats{}, `[{"label":"10:00","wpm":20,"acc":90}]`))
+
+	if !strings.Contains(html, `id="progress-chart"`) {
+		t.Error("missing progress-chart canvas")
+	}
+	if !strings.Contains(html, `data-series=`) {
+		t.Error("missing data-series attribute")
 	}
 }
