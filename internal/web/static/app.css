@@ -135,12 +135,14 @@ html, body {
   gap: var(--gap);
 }
 
-/* subtle ISO-style stagger */
-.keyrow-numeric { margin-left: 0; }
-.keyrow-upper   { margin-left: calc(var(--key-w) * 0.25); }
-.keyrow-middle  { margin-left: calc(var(--key-w) * 0.55); }
-.keyrow-bottom  { margin-left: calc(var(--key-w) * 0.20); }
-.keyrow-space   { margin-left: calc(var(--key-w) * 0.20); }
+/* all rows share the same left edge: no per-row stagger */
+.keyrow-numeric,
+.keyrow-upper,
+.keyrow-middle,
+.keyrow-bottom,
+.keyrow-space {
+  margin-left: 0;
+}
 
 .key {
   width: var(--key-w);
