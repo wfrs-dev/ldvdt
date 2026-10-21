@@ -29,10 +29,10 @@ Branches are cumulative; each child includes its ancestors.
 
 | # | Branch | Commits | Authored lines | Depends on |
 | --- | --- | --- | --- | --- |
-| 1 | `feat/ldvdt-foundation` | `a2cc5a3..408c71f` | ~1,586 | — |
-| 2 | `feat/ldvdt-practice-slice` | `aea4dba` | ~1,581 | PR 1 |
-| 3 | `feat/ldvdt-keyboard-accent` | `f1e2f93..cc62f01` | ~733 | PR 2 |
-| 4 | `feat/ldvdt-charts-docs` | `cf44dbb..e235cd6` | ~771 | PR 3 |
+| 1 | `feat/ldvdt-foundation` | `aa8c85e..8589d20` | ~1,586 | — |
+| 2 | `feat/ldvdt-practice-slice` | `ade07e6` | ~1,581 | PR 1 |
+| 3 | `feat/ldvdt-keyboard-accent` | `a54d727` | ~733 | PR 2 |
+| 4 | `feat/ldvdt-charts-docs` | `7bee87f..HEAD` | ~771 | PR 3 |
 
 No cohesive split brings every slice under the advisory 400-line budget without
 deleting tests or docs, or splitting a work unit from the tests that verify it.
@@ -104,12 +104,11 @@ feature tracker: feat/ldvdt-trainer (draft)
 The current branch holds every commit, so free the tracker name first:
 
 ```bash
-git branch -m feat/ldvdt-trainer feat/ldvdt-candidate   # keep all work
-git branch feat/ldvdt-trainer master                    # tracker, empty
-git branch feat/ldvdt-foundation      408c71f
-git branch feat/ldvdt-practice-slice  aea4dba
-git branch feat/ldvdt-keyboard-accent cc62f01
-git branch feat/ldvdt-charts-docs     e235cd6
+git branch feat/ldvdt-trainer main                       # tracker, empty
+git branch feat/ldvdt-foundation      8589d20
+git branch feat/ldvdt-practice-slice  ade07e6
+git branch feat/ldvdt-keyboard-accent a54d727
+git branch feat/ldvdt-charts-docs     HEAD
 ```
 
 ## Delivery commands (require explicit authorization, one per action)
@@ -131,7 +130,8 @@ git push -u origin feat/ldvdt-charts-docs
 gh pr create --draft --repo <owner>/ldvdt --base feat/ldvdt-trainer \
   --head feat/ldvdt-foundation --title "feat: ldvdt foundation" \
   --body-file odd/pr/ldvdt-trainer-pr.md
-# ... repeat for each child, changing --base/--head
+# # PR 1 targets main; PR 2 targets PR 1's branch; and so on.
+# The tracker PR is draft/no-merge and only tracks the chain.
 ```
 
 ## Blockers before any of this
