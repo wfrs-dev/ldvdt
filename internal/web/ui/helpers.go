@@ -45,10 +45,13 @@ type progressPoint struct {
 	Acc   float64 `json:"acc"`
 }
 
-// chartLabel renders a practice timestamp for the chart axis. Today's practices
-// show the 12-hour time only; older ones also carry the full date
-// (day/month/year), so points from different days and years stay distinguishable.
+// chartLabel renders a practice timestamp for the chart axis in now's location.
+// Today's practices show the 12-hour time only; older ones also carry the full
+// date (day/month/year), so points from different days and years stay
+// distinguishable. at is normalised to now's location so the "today" boundary
+// and the rendered clock agree even when the two times carry different zones.
 func chartLabel(at, now time.Time) string {
+	at = at.In(now.Location())
 	if at.Year() == now.Year() && at.YearDay() == now.YearDay() {
 		return at.Format("03:04PM")
 	}

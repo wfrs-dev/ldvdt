@@ -164,6 +164,29 @@ func TestSeriesJSON(t *testing.T) {
 	}
 }
 
+// TestSeriesJSONNormalisesToNowZone pins that a practice timestamp is rendered
+// in now's location, not in the location it happened to be constructed with.
+// The "today" boundary and the clock must agree even when at and now carry
+// different zones (e.g. a UTC value read back next to a local now).
+func TestSeriesJSONNormalisesToNowZone(t *testing.T) {
+	loc := time.FixedZone("UTC-5", -5*3600)
+	now := time.Date(2026, 10, 20, 12, 0, 0, 0, loc)
+
+	// 2026-10-19 23:30 UTC is 2026-10-19 18:30 in UTC-5: the previous local day.
+	at := time.Date(2026, 10, 19, 23, 30, 0, 0, time.UTC)
+
+	got, err := SeriesJSON([]domain.Practice{
+		{CompletedAt: at, WPM: 22.46, Accuracy: 0.9149, Consistency: 30},
+	}, now)
+	if err != nil {
+		t.Fatalf("SeriesJSON error: %v", err)
+	}
+	want := `[{"label":"19/10/2026 06:30PM","wpm":22.5,"acc":91.5}]`
+	if got != want {
+		t.Errorf("SeriesJSON =\n %s\nwant\n %s", got, want)
+	}
+}
+
 func TestProgressRendersSeries(t *testing.T) {
 	html := render(t, Progress(domain.Stats{}, `[{"label":"10:00","wpm":20,"acc":90}]`))
 

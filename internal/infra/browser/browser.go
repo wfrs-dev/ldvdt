@@ -8,16 +8,20 @@ import (
 )
 
 // commandFor returns the program and arguments that open url in the default
-// browser for the given GOOS. Windows uses rundll32, macOS uses open, and Linux
-// shares xdg-open with every other Unix. It is separated from Open so the
-// platform mapping can be tested without launching anything.
+// browser for the given GOOS. Windows uses rundll32 and macOS uses open; every
+// other platform (Linux, the BSDs, Plan 9, …) falls back to xdg-open as a
+// best-effort default. It is separated from Open so the platform mapping can be
+// tested without launching anything.
 func commandFor(goos, url string) (string, []string, error) {
 	switch goos {
 	case "windows":
 		return "rundll32", []string{"url.dll,FileProtocolHandler", url}, nil
 	case "darwin":
 		return "open", []string{url}, nil
-	default: // Linux and every other Unix use the XDG opener.
+	// Linux and the other Unix-like systems assume xdg-open; it is the common
+	// freedesktop opener there, but not a guarantee that every such platform
+	// ships it.
+	default:
 		return "xdg-open", []string{url}, nil
 	}
 }
