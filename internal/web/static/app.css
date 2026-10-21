@@ -256,7 +256,7 @@ h1, h2, h3 { font-style: italic; }
 .hint { color: var(--muted); text-align: center; max-width: 480px; }
 
 /* Completion summary (WPM, accuracy, rhythm): centred, bold and italic, in the
-   same italic voice as the headings. */
+   same italic voice as the headings, plus a button to start another practice. */
 .practice-summary {
   margin: 0;
   text-align: center;
@@ -264,7 +264,30 @@ h1, h2, h3 { font-style: italic; }
   font-weight: 700;
   font-size: 1.25rem;
   color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
+
+.practice-summary p { margin: 0; }
+
+/* The restart button is a control, so it stays upright instead of inheriting
+   the summary's italic. */
+.new-practice {
+  font-family: inherit;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: var(--accent);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.new-practice:hover { filter: brightness(1.1); }
 
 /* ---- keyboard ---- */
 .keyboard {

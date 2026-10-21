@@ -195,19 +195,49 @@
         if (window.htmx) {
           window.htmx.ajax("GET", "/progress", { target: "#progress-panel", swap: "innerHTML" });
         }
-        // Show a brief summary in the words area.
+        // Show a brief summary in the words area, with a button that starts
+        // another practice using the same settings.
         const root = document.getElementById("words");
         if (root) {
-          const summary = document.createElement("p");
+          const summary = document.createElement("div");
           summary.className = "practice-summary";
-          summary.textContent =
+
+          const text = document.createElement("p");
+          text.textContent =
             "Listo — " + Math.round(wpm) + " WPM · " +
             (accuracy * 100).toFixed(1) + "% precisión · " +
             consistency.toFixed(0) + " ms ritmo";
+          summary.appendChild(text);
+
+          const again = document.createElement("button");
+          again.type = "button";
+          again.className = "new-practice";
+          again.textContent = "Nueva práctica";
+          again.addEventListener("click", startNewPractice);
+          summary.appendChild(again);
+
           root.prepend(summary);
         }
       })
       .catch((err) => console.error(err));
+  }
+
+  // startNewPractice loads a fresh practice with the settings of the one that
+  // just finished. The swap on #words is what the htmx:afterSwap handler above
+  // uses to re-initialise the typing engine, so no extra wiring is needed.
+  function startNewPractice() {
+    const root = document.getElementById("words");
+    if (!root || !window.htmx) return;
+    const data = root.dataset || {};
+    const params = new URLSearchParams({
+      level: data.level || "1",
+      lang: data.lang || "es",
+      count: data.count || "20",
+    });
+    window.htmx.ajax("GET", "/practice?" + params.toString(), {
+      target: "#words",
+      swap: "outerHTML",
+    });
   }
 
   function onKeydown(e) {
@@ -453,5 +483,5 @@
   initTheme();
   renderProgressChart();
 
-  window.ldvdt = { startPractice, composeTyped, renderProgressChart, toggleTheme, applyTheme, initTheme };
+  window.ldvdt = { startPractice, startNewPractice, composeTyped, renderProgressChart, toggleTheme, applyTheme, initTheme };
 })();
