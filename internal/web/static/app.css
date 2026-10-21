@@ -31,9 +31,17 @@ html, body {
   /* three stacked rows: controls, practice (words + keyboard), progress */
   grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-columns: 1fr;
+  /* 100vh first as a fallback, 100dvh where supported so mobile browser
+     chrome does not clip the bottom row. */
   height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   gap: 1px;
-  overflow: hidden;
+  /* Scroll rather than clip: the controls and progress rows are sized to their
+     content, so on a short viewport their sum can exceed the height above and
+     the progress row would otherwise be unreachable. */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .panel {

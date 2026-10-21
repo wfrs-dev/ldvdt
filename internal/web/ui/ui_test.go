@@ -25,11 +25,16 @@ func render(t *testing.T, c interface {
 	return buf.String()
 }
 
-func TestPageRenders(t *testing.T) {
+// renderPage renders the whole SPA shell with the default keyboard and levels,
+// the fixture every page-level test needs.
+func renderPage(t *testing.T) string {
+	t.Helper()
 	kb := domain.DefaultKeyboard()
-	levels := domain.BuildLevels(kb)
+	return render(t, Page(kb, domain.BuildLevels(kb), domain.Stats{}, "[]"))
+}
 
-	html := render(t, Page(kb, levels, domain.Stats{}, "[]"))
+func TestPageRenders(t *testing.T) {
+	html := renderPage(t)
 
 	for _, want := range []string{
 		"<div class=\"keyboard\"",
@@ -50,10 +55,7 @@ func TestPageRenders(t *testing.T) {
 // these three regions out as stacked rows, so document order is what the user
 // actually sees.
 func TestPageStacksThreeRows(t *testing.T) {
-	kb := domain.DefaultKeyboard()
-	levels := domain.BuildLevels(kb)
-
-	html := render(t, Page(kb, levels, domain.Stats{}, "[]"))
+	html := renderPage(t)
 
 	controls := strings.Index(html, `class="panel panel-controls"`)
 	words := strings.Index(html, `id="words"`)
