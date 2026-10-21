@@ -3,7 +3,6 @@
 package browser
 
 import (
-	"fmt"
 	"os/exec"
 	"runtime"
 )
@@ -17,10 +16,8 @@ func commandFor(goos, url string) (string, []string, error) {
 		return "rundll32", []string{"url.dll,FileProtocolHandler", url}, nil
 	case "darwin":
 		return "open", []string{url}, nil
-	case "linux":
+	default: // linux and other unixes, as before the refactor
 		return "xdg-open", []string{url}, nil
-	default:
-		return "", nil, fmt.Errorf("browser: unsupported platform %q", goos)
 	}
 }
 

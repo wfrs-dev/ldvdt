@@ -30,8 +30,9 @@ func TestCommandFor(t *testing.T) {
 			wantArgs: []string{url},
 		},
 		{
-			goos:    "plan9",
-			wantErr: true,
+			goos:     "plan9",
+			wantName: "xdg-open",
+			wantArgs: []string{url},
 		},
 	}
 
