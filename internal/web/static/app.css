@@ -28,7 +28,9 @@ html, body {
 
 .app {
   display: grid;
-  grid-template-columns: 260px 1fr 300px;
+  /* three stacked rows: controls, practice (words + keyboard), progress */
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: 1fr;
   height: 100vh;
   gap: 1px;
   overflow: hidden;
@@ -48,17 +50,19 @@ html, body {
   gap: 20px;
 }
 
-/* ---- right panel: controls ---- */
+/* ---- first row: controls ---- */
 .controls {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
 }
 
 .controls label {
   font-size: 0.8rem;
   color: var(--muted);
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .controls select,
@@ -72,7 +76,7 @@ html, body {
 }
 
 .controls button {
-  margin-top: 12px;
+  margin-top: 0;
   background: var(--accent);
   color: #1a1b26;
   border: none;
@@ -85,8 +89,24 @@ html, body {
 
 .controls button:hover { filter: brightness(1.1); }
 
-/* ---- left panel: progress ---- */
+/* ---- third row: progress ---- */
+.panel-progress {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+  grid-template-areas:
+    "title title"
+    "stats chart";
+  gap: 8px 24px;
+  align-items: start;
+}
+
+.panel-progress h2 {
+  grid-area: title;
+  margin: 0;
+}
+
 .stats {
+  grid-area: stats;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 6px 12px;
@@ -96,7 +116,7 @@ html, body {
 .stats dt { color: var(--muted); }
 .stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 
-.chart-box { margin-top: 16px; height: 160px; }
+.chart-box { grid-area: chart; margin-top: 0; height: 160px; }
 
 /* ---- centre: words ---- */
 .words-row {
@@ -228,10 +248,13 @@ html, body {
 
 /* ---- responsive ---- */
 @media (max-width: 900px) {
-  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
   .panel { padding: 10px; }
   :root { --key-h: 38px; --gap: 5px; }
-  .panel-center { order: 2; }
-  .panel-left { order: 3; }
-  .panel-right { order: 1; }
+  .panel-progress {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "title"
+      "stats"
+      "chart";
+  }
 }

@@ -6,8 +6,9 @@ import (
 	"github.com/wfrs-dev/ldvdt/internal/domain"
 )
 
-// Page renders the full SPA shell: progress on the left, practice + keyboard in
-// the centre, and controls on the right (S8).
+// Page renders the full SPA shell in three stacked rows (S8): the practice
+// controls on top, the words and keyboard in the middle, and the progress panel
+// (aggregate stats plus the chart) at the bottom.
 templ Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats, series string) {
 	<!DOCTYPE html>
 	<html lang="es">
@@ -22,18 +23,18 @@ templ Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats, series
 	</head>
 	<body>
 		<div class="app">
-			<aside class="panel panel-left" id="progress-panel">
-				@Progress(stats, series)
-			</aside>
+			<section class="panel panel-controls">
+				@Controls(levels)
+			</section>
 			<main class="panel panel-center">
 				<div id="words">
 					<p class="hint">Elegí nivel, idioma y cantidad, y tocá <strong>Empezar</strong>.</p>
 				</div>
 				@Keyboard(kb)
 			</main>
-			<aside class="panel panel-right">
-				@Controls(levels)
-			</aside>
+			<section class="panel panel-progress" id="progress-panel">
+				@Progress(stats, series)
+			</section>
 		</div>
 	</body>
 	</html>

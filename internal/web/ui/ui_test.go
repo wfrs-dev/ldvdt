@@ -45,6 +45,43 @@ func TestPageRenders(t *testing.T) {
 	}
 }
 
+// TestPageStacksThreeRows pins the row order of the SPA shell (S8): controls
+// first, then the words and keyboard, then the progress panel. app.css lays
+// these three regions out as stacked rows, so document order is what the user
+// actually sees.
+func TestPageStacksThreeRows(t *testing.T) {
+	kb := domain.DefaultKeyboard()
+	levels := domain.BuildLevels(kb)
+
+	html := render(t, Page(kb, levels, domain.Stats{}, "[]"))
+
+	controls := strings.Index(html, `class="panel panel-controls"`)
+	words := strings.Index(html, `id="words"`)
+	progress := strings.Index(html, `id="progress-panel"`)
+
+	if controls < 0 || words < 0 || progress < 0 {
+		t.Fatalf("missing region: controls=%d words=%d progress=%d", controls, words, progress)
+	}
+	if !(controls < words && words < progress) {
+		t.Errorf("region order = controls:%d words:%d progress:%d, want controls < words < progress",
+			controls, words, progress)
+	}
+
+	// The configuration form belongs to the first row.
+	form := strings.Index(html, `id="controls"`)
+	if form < controls || form > words {
+		t.Errorf("controls form at %d, want between the first panel (%d) and the words (%d)",
+			form, controls, words)
+	}
+
+	// The retired column classes must not linger.
+	for _, gone := range []string{"panel-left", "panel-right"} {
+		if strings.Contains(html, gone) {
+			t.Errorf("page still uses the retired column class %q", gone)
+		}
+	}
+}
+
 func TestKeyboardHasAllKeys(t *testing.T) {
 	kb := domain.DefaultKeyboard()
 	html := render(t, Keyboard(kb))
