@@ -1,0 +1,237 @@
+/* ldvdt trainer — layout, keyboard and practice styles */
+
+:root {
+  --bg: #1a1b26;
+  --panel: #24283b;
+  --panel-2: #2f3349;
+  --text: #c0caf5;
+  --muted: #7c84a8;
+  --accent: #7aa2f7;
+  --correct: #9ece6a;
+  --incorrect: #f7768e;
+  --current: #ff9e64;
+
+  --key-w: 52px;
+  --key-h: 52px;
+  --gap: 6px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 260px 1fr 300px;
+  height: 100vh;
+  gap: 1px;
+  overflow: hidden;
+}
+
+.panel {
+  background: var(--panel);
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.panel-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* ---- right panel: controls ---- */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.controls label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.controls select,
+.controls input {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid #3b4261;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 1rem;
+}
+
+.controls button {
+  margin-top: 12px;
+  background: var(--accent);
+  color: #1a1b26;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.controls button:hover { filter: brightness(1.1); }
+
+/* ---- left panel: progress ---- */
+.stats {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 0;
+}
+
+.stats dt { color: var(--muted); }
+.stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+
+.chart-box { margin-top: 16px; height: 160px; }
+
+/* ---- centre: words ---- */
+.words-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px; /* visible space between words + wrap to new lines */
+  justify-content: center;
+  align-items: baseline;
+  max-width: 720px;
+  width: 100%;
+  font-size: 1.6rem;
+  line-height: 2.2rem;
+}
+
+.word { white-space: nowrap; }
+
+.char { border-radius: 3px; padding: 0 1px; }
+.char.current { background: var(--current); color: #1a1b26; }
+.char.correct { color: var(--correct); }
+.char.incorrect { color: var(--incorrect); background: rgba(247, 118, 142, 0.15); }
+
+.hint { color: var(--muted); text-align: center; max-width: 480px; }
+
+/* ---- keyboard ---- */
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  padding: 12px;
+  background: var(--panel-2);
+  border-radius: 12px;
+  width: min(100%, 880px);
+  overflow-x: auto;
+}
+
+.keyrow {
+  display: flex;
+  gap: var(--gap);
+}
+
+/* Every row fills the same total width. Keys grow in proportion to their
+   width units (data-w), so each row sums to exactly 15 units. */
+.key {
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--key-h);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: #1a1b26;
+  border: 1px solid #3b4261;
+  cursor: default;
+  user-select: none;
+  transition: transform 60ms ease, box-shadow 60ms ease, background 60ms ease;
+  position: relative;
+}
+
+.key-top { font-size: 0.72rem; color: var(--muted); line-height: 1; }
+.key-bottom { font-size: 0.95rem; color: var(--text); line-height: 1.1; }
+
+/* finger colours (top border accent) */
+.finger-LP { border-top: 3px solid #f7768e; }
+.finger-LR { border-top: 3px solid #ff9e64; }
+.finger-LM { border-top: 3px solid #e0af68; }
+.finger-LI { border-top: 3px solid #9ece6a; }
+.finger-RI { border-top: 3px solid #2ac3de; }
+.finger-RM { border-top: 3px solid #7aa2f7; }
+.finger-RR { border-top: 3px solid #bb9af7; }
+.finger-RP { border-top: 3px solid #f7768e; }
+.finger-TH { border-top: 3px solid #565f89; }
+
+/* highlight states applied by the typing engine */
+.key.active {
+  background: #2f3349;
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.key.current {
+  background: var(--current);
+  border-color: var(--current);
+  transform: translateY(2px);
+}
+.key.current .key-top,
+.key.current .key-bottom { color: #1a1b26; }
+
+/* width units: flex-grow proportional to the key's physical width */
+.key[data-w="1"]    { flex-grow: 1; }
+.key[data-w="1.25"] { flex-grow: 1.25; }
+.key[data-w="1.75"] { flex-grow: 1.75; }
+.key[data-w="2"]    { flex-grow: 2; }
+.key[data-w="2.25"] { flex-grow: 2.25; }
+.key[data-w="7.5"]  { flex-grow: 7.5; }
+
+/* decorative modifier keys: same neutral colour */
+.key-mod {
+  background: #232739;
+  border-color: var(--mod-border);
+}
+.key-mod .key-bottom { font-size: 0.72rem; color: var(--muted); }
+
+/* ISO Enter: a single L-shaped key split in two halves that merge.
+   The top half closes the upper row and bridges the row gap; the bottom half
+   closes the home row, exposing only its left part with a top border. */
+.key-enter-top {
+  position: relative;
+  z-index: 2;
+  height: calc(var(--key-h) + var(--gap));
+  margin-bottom: calc(var(--gap) * -1);
+  border-bottom: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.key-enter-bottom {
+  position: relative;
+  z-index: 1;
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  /* the notch: a top edge only where the narrow upper half does not cover it */
+  box-shadow: 0 -1px 0 0 var(--mod-border);
+}
+
+/* the spacebar keeps the modifier look but reads as a normal key face */
+.key-space .key-bottom { font-size: 0.8rem; }
+
+/* ---- responsive ---- */
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  .panel { padding: 10px; }
+  :root { --key-h: 38px; --gap: 5px; }
+  .panel-center { order: 2; }
+  .panel-left { order: 3; }
+  .panel-right { order: 1; }
+}
