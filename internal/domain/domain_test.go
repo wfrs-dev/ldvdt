@@ -37,11 +37,11 @@ func TestFindChar(t *testing.T) {
 	kb := DefaultKeyboard()
 
 	cases := []struct {
-		ch         rune
-		row        string
-		index      int
-		shift      ShiftState
-		ok         bool
+		ch    rune
+		row   string
+		index int
+		shift ShiftState
+		ok    bool
 	}{
 		{'a', "middle", 0, Normal, true},
 		{'A', "middle", 0, Shift, true},
