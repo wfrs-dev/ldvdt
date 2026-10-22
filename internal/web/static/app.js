@@ -197,27 +197,11 @@
         }
         // Show a brief summary in the words area, with a button that starts
         // another practice using the same settings.
-        const root = document.getElementById("words");
-        if (root) {
-          const summary = document.createElement("div");
-          summary.className = "practice-summary";
-
-          const text = document.createElement("p");
-          text.textContent =
-            "Listo — " + Math.round(wpm) + " WPM · " +
-            (accuracy * 100).toFixed(1) + "% precisión · " +
-            consistency.toFixed(0) + " ms ritmo";
-          summary.appendChild(text);
-
-          const again = document.createElement("button");
-          again.type = "button";
-          again.className = "new-practice";
-          again.textContent = "Nueva práctica";
-          again.addEventListener("click", startNewPractice);
-          summary.appendChild(again);
-
-          root.prepend(summary);
-        }
+        showSummary(
+          "Listo — " + Math.round(wpm) + " WPM · " +
+          (accuracy * 100).toFixed(1) + "% precisión · " +
+          consistency.toFixed(0) + " ms ritmo"
+        );
       })
       .catch((err) => console.error(err));
   }
@@ -238,6 +222,34 @@
       target: "#words",
       swap: "outerHTML",
     });
+  }
+
+  // buildPracticeSummary returns the completion summary: the result line plus
+  // a button wired to startNewPractice. Kept out of the fetch callback so the
+  // button wiring can be tested without driving a whole practice to the end.
+  function buildPracticeSummary(text) {
+    const summary = document.createElement("div");
+    summary.className = "practice-summary";
+
+    const line = document.createElement("p");
+    line.textContent = text;
+    summary.appendChild(line);
+
+    const again = document.createElement("button");
+    again.type = "button";
+    again.className = "new-practice";
+    again.textContent = "Nueva práctica";
+    again.addEventListener("click", startNewPractice);
+    summary.appendChild(again);
+
+    return summary;
+  }
+
+  // showSummary prepends the completion summary to the practice area.
+  function showSummary(text) {
+    const root = document.getElementById("words");
+    if (!root) return;
+    root.prepend(buildPracticeSummary(text));
   }
 
   function onKeydown(e) {
@@ -483,5 +495,5 @@
   initTheme();
   renderProgressChart();
 
-  window.ldvdt = { startPractice, startNewPractice, composeTyped, renderProgressChart, toggleTheme, applyTheme, initTheme };
+  window.ldvdt = { startPractice, startNewPractice, buildPracticeSummary, showSummary, composeTyped, renderProgressChart, toggleTheme, applyTheme, initTheme };
 })();
