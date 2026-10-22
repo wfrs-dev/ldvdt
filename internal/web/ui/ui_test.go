@@ -99,8 +99,16 @@ func TestPageRendersThemeToggleAndBootstrap(t *testing.T) {
 	if !strings.Contains(html, `localStorage.getItem("ldvdt-theme")`) {
 		t.Error("inline bootstrap must read the ldvdt-theme localStorage key")
 	}
-	if !strings.Contains(html, `document.documentElement.setAttribute("data-theme", theme)`) {
+	if !strings.Contains(html, `setAttribute("data-theme", theme)`) {
 		t.Error("inline bootstrap must apply the saved theme before first paint")
+	}
+	// The bootstrap has to run before the stylesheet, otherwise the first paint
+	// can use the wrong palette. That ordering is the whole point of the script,
+	// so it is pinned instead of the exact source text.
+	bootstrap := strings.Index(html, `localStorage.getItem("ldvdt-theme")`)
+	stylesheet := strings.Index(html, `rel="stylesheet"`)
+	if bootstrap < 0 || stylesheet < 0 || bootstrap > stylesheet {
+		t.Errorf("theme bootstrap at %d must precede the stylesheet at %d", bootstrap, stylesheet)
 	}
 }
 

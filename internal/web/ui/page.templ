@@ -18,12 +18,16 @@ templ Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats, series
 		<title>ldvdt · entrenador de layout</title>
 		<script>
 			// Apply the saved theme before first paint to avoid flashing the
-			// wrong theme (S20). The SSR default above is dark.
+			// wrong theme (S20). The server-rendered attribute is the single
+			// source of the default, so it is never duplicated here.
 			(function () {
 				try {
+					var el = document.documentElement;
 					var theme = localStorage.getItem("ldvdt-theme");
-					if (theme !== "light" && theme !== "dark") theme = "dark";
-					document.documentElement.setAttribute("data-theme", theme);
+					if (theme !== "light" && theme !== "dark") {
+						theme = el.getAttribute("data-theme") || "dark";
+					}
+					el.setAttribute("data-theme", theme);
 				} catch (e) {}
 			})();
 		</script>

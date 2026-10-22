@@ -198,9 +198,9 @@
         // Show a brief summary in the words area, with a button that starts
         // another practice using the same settings.
         showSummary(
-          "Listo — " + Math.round(wpm) + " WPM · " +
-          (accuracy * 100).toFixed(1) + "% precisión · " +
-          consistency.toFixed(0) + " ms ritmo"
+          `Listo — ${Math.round(wpm)} WPM · ` +
+          `${(accuracy * 100).toFixed(1)}% precisión · ` +
+          `${consistency.toFixed(0)} ms ritmo`
         );
       })
       .catch((err) => console.error(err));
@@ -459,18 +459,21 @@
     toggle.textContent = text;
   }
 
+  // applyTheme switches the document theme, keeps the toggle label in sync,
+  // persists the choice and re-renders the chart with the new palette. Owning
+  // persistence here means every entry point (the toggle and initTheme) leaves
+  // the same state instead of only the toggle remembering it.
   function applyTheme(theme) {
     const el = document.documentElement;
     const previous = currentTheme();
     if (el) el.setAttribute("data-theme", theme);
+    persistTheme(theme);
     setToggleLabel(theme);
     if (previous !== theme) renderProgressChart();
   }
 
   function toggleTheme() {
-    const next = currentTheme() === "light" ? "dark" : "light";
-    persistTheme(next);
-    applyTheme(next);
+    applyTheme(currentTheme() === "light" ? "dark" : "light");
   }
 
   // initTheme reuses the persisted choice (normally already applied by the
