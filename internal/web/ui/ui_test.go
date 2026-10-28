@@ -50,38 +50,86 @@ func TestPageRenders(t *testing.T) {
 	}
 }
 
-// TestPageStacksThreeRows pins the row order of the SPA shell (S8): controls
-// first, then the words and keyboard, then the progress panel. app.css lays
-// these three regions out as stacked rows, so document order is what the user
-// actually sees.
+// TestPageStacksThreeRows pins the shell structure of S22: everything lives
+// inside a single Bootstrap .container, and the three rows keep their order —
+// controls, then the words and keyboard, then the progress panel. Document order
+// is what the user sees, because the rows stack.
 func TestPageStacksThreeRows(t *testing.T) {
 	html := renderPage(t)
 
-	controls := strings.Index(html, `class="panel panel-controls"`)
-	words := strings.Index(html, `id="words"`)
-	progress := strings.Index(html, `id="progress-panel"`)
-
-	if controls < 0 || words < 0 || progress < 0 {
-		t.Fatalf("missing region: controls=%d words=%d progress=%d", controls, words, progress)
+	container := strings.Index(html, `<div class="container`)
+	if container < 0 {
+		t.Fatal("page is not wrapped in a Bootstrap container")
 	}
-	if !(controls < words && words < progress) {
-		t.Errorf("region order = controls:%d words:%d progress:%d, want controls < words < progress",
-			controls, words, progress)
+
+	// Each row is a Bootstrap .row carrying its own id, so the grid classes and
+	// the document order can be checked together.
+	rows := []string{"controls-row", "practice-row", "progress-panel"}
+	previous := container
+	for _, id := range rows {
+		tag, at := tagOf(t, html, `id="`+id+`"`)
+		if !strings.Contains(tag, `class="row`) {
+			t.Errorf("row %q is not a Bootstrap row: %s", id, tag)
+		}
+		if at < previous {
+			t.Errorf("row %q at %d must come after the previous region at %d", id, at, previous)
+		}
+		previous = at
 	}
 
 	// The configuration form belongs to the first row.
 	form := strings.Index(html, `id="controls"`)
-	if form < controls || form > words {
-		t.Errorf("controls form at %d, want between the first panel (%d) and the words (%d)",
-			form, controls, words)
+	words := strings.Index(html, `id="words"`)
+	if form < container || words < container {
+		t.Fatalf("form or words outside the container: form=%d words=%d container=%d",
+			form, words, container)
+	}
+	if form > words {
+		t.Errorf("controls form at %d must precede the words at %d", form, words)
 	}
 
-	// The retired column classes must not linger.
-	for _, gone := range []string{"panel-left", "panel-right"} {
+	// The retired layout classes must not linger.
+	for _, gone := range []string{"panel-left", "panel-right", "class=\"app\"", "panel-controls", "panel-progress"} {
 		if strings.Contains(html, gone) {
-			t.Errorf("page still uses the retired column class %q", gone)
+			t.Errorf("page still uses the retired layout class %q", gone)
 		}
 	}
+}
+
+// TestPageUsesBootstrapComponents pins that the interactive parts are real
+// Bootstrap controls (S21), not app CSS pretending to be one: without the
+// component classes the themed build never reaches the form.
+func TestPageUsesBootstrapComponents(t *testing.T) {
+	html := renderPage(t)
+
+	for _, want := range []string{
+		`class="form-select`,
+		`class="form-control`,
+		`class="btn btn-primary`,
+		`class="btn btn-outline-secondary`,
+		`class="form-label`,
+	} {
+		if !strings.Contains(html, want) {
+			t.Errorf("page HTML missing Bootstrap component %q", want)
+		}
+	}
+}
+
+// tagOf returns the opening tag that carries marker and its offset, so a test
+// can assert the attributes of the element with a given id without an HTML
+// parser.
+func tagOf(t *testing.T, html, marker string) (string, int) {
+	t.Helper()
+	at := strings.Index(html, marker)
+	if at < 0 {
+		t.Fatalf("marker %q not found", marker)
+	}
+	start := strings.LastIndex(html[:at], "<")
+	end := strings.Index(html[at:], ">")
+	if start < 0 || end < 0 {
+		t.Fatalf("marker %q is not inside a tag", marker)
+	}
+	return html[start : at+end+1], at
 }
 
 // TestPageRendersThemeToggleAndBootstrap pins the theme plumbing the client

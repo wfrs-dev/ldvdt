@@ -62,6 +62,19 @@ func TestIndexRendersSPA(t *testing.T) {
 			t.Errorf("GET / missing %q", want)
 		}
 	}
+
+	// The served shell has to carry the themed Bootstrap sheet and the theme
+	// attribute the client toggles (S21, S22, S24); the unit tests pin the
+	// ordering, this one pins that the route actually serves it.
+	for _, want := range []string{
+		`href="/static/vendor/bootstrap.min.css"`,
+		`data-bs-theme="dark"`,
+		`class="container`,
+	} {
+		if !strings.Contains(html, want) {
+			t.Errorf("GET / missing %q", want)
+		}
+	}
 }
 
 func TestPracticeLevel1(t *testing.T) {

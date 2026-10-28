@@ -14,9 +14,10 @@ import (
 	"github.com/wfrs-dev/ldvdt/internal/domain"
 )
 
-// Page renders the full SPA shell in three stacked rows (S8): the practice
-// controls on top, the words and keyboard in the middle, and the progress panel
-// (aggregate stats plus the chart) at the bottom.
+// Page renders the full SPA shell (S22): a single Bootstrap .container holding
+// three stacked rows — the practice controls on top, the words and keyboard in
+// the middle, and the progress panel (aggregate stats plus the chart) at the
+// bottom.
 func Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats, series string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -38,7 +39,7 @@ func Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats, series 
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"es\" data-bs-theme=\"dark\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>ldvdt · entrenador de layout</title><script>\n\t\t\t// Apply the saved theme before first paint to avoid flashing the\n\t\t\t// wrong theme (S20, S24). data-bs-theme is Bootstrap 5.3's own theme\n\t\t\t// attribute, so the components switch with the palette. The\n\t\t\t// server-rendered attribute is the single source of the default, so\n\t\t\t// it is never duplicated here.\n\t\t\t(function () {\n\t\t\t\ttry {\n\t\t\t\t\tvar el = document.documentElement;\n\t\t\t\t\tvar theme = localStorage.getItem(\"ldvdt-theme\");\n\t\t\t\t\tif (theme !== \"light\" && theme !== \"dark\") {\n\t\t\t\t\t\ttheme = el.getAttribute(\"data-bs-theme\") || \"dark\";\n\t\t\t\t\t}\n\t\t\t\t\tel.setAttribute(\"data-bs-theme\", theme);\n\t\t\t\t} catch (e) {}\n\t\t\t})();\n\t\t</script><script src=\"/static/vendor/htmx.min.js\"></script><script src=\"/static/vendor/chart.umd.js\"></script><link rel=\"stylesheet\" href=\"/static/vendor/bootstrap.min.css\"><link rel=\"stylesheet\" href=\"/static/app.css\"><script defer src=\"/static/app.js\"></script></head><body><div class=\"app\"><section class=\"panel panel-controls\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"es\" data-bs-theme=\"dark\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>ldvdt · entrenador de layout</title><script>\n\t\t\t// Apply the saved theme before first paint to avoid flashing the\n\t\t\t// wrong theme (S20, S24). data-bs-theme is Bootstrap 5.3's own theme\n\t\t\t// attribute, so the components switch with the palette. The\n\t\t\t// server-rendered attribute is the single source of the default, so\n\t\t\t// it is never duplicated here.\n\t\t\t(function () {\n\t\t\t\ttry {\n\t\t\t\t\tvar el = document.documentElement;\n\t\t\t\t\tvar theme = localStorage.getItem(\"ldvdt-theme\");\n\t\t\t\t\tif (theme !== \"light\" && theme !== \"dark\") {\n\t\t\t\t\t\ttheme = el.getAttribute(\"data-bs-theme\") || \"dark\";\n\t\t\t\t\t}\n\t\t\t\t\tel.setAttribute(\"data-bs-theme\", theme);\n\t\t\t\t} catch (e) {}\n\t\t\t})();\n\t\t</script><script src=\"/static/vendor/htmx.min.js\"></script><script src=\"/static/vendor/chart.umd.js\"></script><link rel=\"stylesheet\" href=\"/static/vendor/bootstrap.min.css\"><link rel=\"stylesheet\" href=\"/static/app.css\"><script defer src=\"/static/app.js\"></script></head><body><div class=\"container py-3\"><section class=\"row g-2 align-items-center\" id=\"controls-row\"><div class=\"col-12 col-xl-9\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -46,7 +47,7 @@ func Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats, series 
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<button type=\"button\" id=\"theme-toggle\" aria-label=\"Cambiar a tema claro\">Tema claro</button></section><main class=\"panel panel-center\"><div id=\"words\"><p class=\"hint\">Elegí nivel, idioma y cantidad, y tocá <strong>Empezar</strong>.</p></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"col-12 col-xl-3 text-xl-end\"><button type=\"button\" id=\"theme-toggle\" class=\"btn btn-outline-secondary\" aria-label=\"Cambiar a tema claro\">Tema claro</button></div></section><main class=\"row g-3\" id=\"practice-row\"><div class=\"col-12\"><div id=\"words\"><p class=\"hint\">Elegí nivel, idioma y cantidad, y tocá <strong>Empezar</strong>.</p></div></div><div class=\"col-12\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -54,7 +55,7 @@ func Page(kb domain.Keyboard, levels []domain.Level, stats domain.Stats, series 
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</main><section class=\"panel panel-progress\" id=\"progress-panel\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></main><section class=\"row g-3\" id=\"progress-panel\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -92,7 +93,7 @@ func Controls(levels []domain.Level) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<form id=\"controls\" class=\"controls\" hx-get=\"/practice\" hx-target=\"#words\" hx-swap=\"outerHTML\"><label for=\"level\">Nivel</label> <select name=\"level\" id=\"level\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<form id=\"controls\" class=\"row row-cols-auto g-2 align-items-end\" hx-get=\"/practice\" hx-target=\"#words\" hx-swap=\"outerHTML\"><div class=\"col\"><label class=\"form-label\" for=\"level\">Nivel</label> <select class=\"form-select\" name=\"level\" id=\"level\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -104,7 +105,7 @@ func Controls(levels []domain.Level) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(strconv.Itoa(l.Number))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 68, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 78, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 			if templ_7745c5c3_Err != nil {
@@ -117,7 +118,7 @@ func Controls(levels []domain.Level) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(l.Number))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 68, Col: 69}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 78, Col: 70}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -130,7 +131,7 @@ func Controls(levels []domain.Level) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(l.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 68, Col: 83}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 78, Col: 84}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -141,7 +142,7 @@ func Controls(levels []domain.Level) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</select> <label for=\"lang\">Idioma</label> <select name=\"lang\" id=\"lang\"><option value=\"es\">Español</option> <option value=\"en\">English</option></select> <label for=\"count\">Palabras</label> <input type=\"number\" name=\"count\" id=\"count\" min=\"20\" value=\"20\"> <button type=\"submit\">Empezar</button></form>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</select></div><div class=\"col\"><label class=\"form-label\" for=\"lang\">Idioma</label> <select class=\"form-select\" name=\"lang\" id=\"lang\"><option value=\"es\">Español</option> <option value=\"en\">English</option></select></div><div class=\"col\"><label class=\"form-label\" for=\"count\">Palabras</label> <input class=\"form-control\" type=\"number\" name=\"count\" id=\"count\" min=\"20\" value=\"20\"></div><div class=\"col\"><button class=\"btn btn-primary\" type=\"submit\">Empezar</button></div></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -173,98 +174,98 @@ func Progress(stats domain.Stats, series string) templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<h2>Progreso</h2><dl class=\"stats\"><dt>Prácticas</dt><dd>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"col-12\"><h2 class=\"mb-0\">Progreso</h2></div><div class=\"col-12 col-md-5 col-xl-4\"><dl class=\"row mb-0\"><dt class=\"col-7 fw-bold fst-italic text-body-secondary\">Prácticas</dt><dd class=\"col-5 text-end stat-value\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(stats.TotalPractices))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 92, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 109, Col: 77}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</dd><dt>Tiempo total</dt><dd>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</dd><dt class=\"col-7 fw-bold fst-italic text-body-secondary\">Tiempo total</dt><dd class=\"col-5 text-end stat-value\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(formatDuration(stats.TotalTimeMS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 94, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 111, Col: 76}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</dd><dt>Mejor WPM</dt><dd>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</dd><dt class=\"col-7 fw-bold fst-italic text-body-secondary\">Mejor WPM</dt><dd class=\"col-5 text-end stat-value\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(f1(stats.BestWPM))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 96, Col: 25}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 113, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</dd><dt>WPM promedio</dt><dd>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</dd><dt class=\"col-7 fw-bold fst-italic text-body-secondary\">WPM promedio</dt><dd class=\"col-5 text-end stat-value\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(f1(stats.AvgWPM))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 98, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 115, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</dd><dt>Precisión</dt><dd>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</dd><dt class=\"col-7 fw-bold fst-italic text-body-secondary\">Precisión</dt><dd class=\"col-5 text-end stat-value\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(pct(stats.AvgAccuracy))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 100, Col: 30}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 117, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</dd><dt>Consistencia</dt><dd>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</dd><dt class=\"col-7 fw-bold fst-italic text-body-secondary\">Consistencia</dt><dd class=\"col-5 text-end stat-value\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(f1(stats.AvgConsistency))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 102, Col: 32}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 119, Col: 67}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, " ms</dd></dl><div class=\"chart-box\"><canvas id=\"progress-chart\" data-series=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, " ms</dd></dl></div><div class=\"col-12 col-md-7 col-xl-8\"><div class=\"chart-box\"><canvas id=\"progress-chart\" data-series=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.ResolveAttributeValue(series)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 105, Col: 50}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/ui/page.templ`, Line: 124, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\"></canvas></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\"></canvas></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
