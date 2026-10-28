@@ -14,12 +14,12 @@ paleta del usuario, un `div.container` de tres filas y el teclado dibujado en SV
 
 ## Tasks
 
-- **T1** — Renombrar `id="rect83"` → `id="key7"` en `docs/keyboard.svg` (falta el id de la tecla `6`/`>`). [S23, S26] · usuario · n/a
+- **T1** — ✅ Renombrar `id="rect83"` → `id="key7"` en `docs/keyboard.svg` (faltaba el id de la tecla `6`/`>`). [S23, S26] · usuario · `fix: draw the missing SVG key and pin the design coverage`
 - **T2** — ✅ Vendorizar Bootstrap 5.3.3 compilado desde Sass con la paleta de S21 + puente de tema `data-bs-theme` en `app.css`. [S21, S24] · inline · `ce98a20 feat: vendor themed Bootstrap 5 and the new palette`
 - **T3** — ✅ Envolver el shell en `div.container` con las tres filas y componentes Bootstrap (form, stats, chart). [S22, S24] · inline · `6f38279 feat: wrap the SPA shell in a Bootstrap container`
 - **T4** — ✅ Generador + dominio: campo `id` de `layout.yaml` → `Key.ID`, copia generada del SVG y componente `Keyboard` que embebe el SVG con su `data-keymap`. [S23, S26] · inline · `48d3d99 feat: render the keyboard from the SVG design`
 - **T5** — ✅ Motor JS: resaltar la tecla actual por `#key<id>` con `#bc8f8f`, restaurar el relleno original y quitar el resaltado de nivel. [S23, S25] · inline · `88190e8 feat: highlight the SVG key to press`
-- **T6** — ✅ Tests (Go + JS) y docs (`README.md`, CI de artefactos generados). [S21, S22, S23] · inline · `docs: document the Bootstrap shell and SVG keyboard`
+- **T6** — ✅ Tests (Go + JS) y docs (`README.md`, CI de artefactos generados). [S21, S22, S23] · inline · `a5ce454 docs: document the Bootstrap shell and SVG keyboard`
 
 ## Log
 
@@ -61,3 +61,7 @@ paleta del usuario, un `div.container` de tres filas y el teclado dibujado en SV
   - El fill del resaltado se lee de `--ldvdt-key-current` en `app.css` con fallback `#bc8f8f`, para no duplicar el color de la paleta en JS (mismo patrón que el chart).
   - `domain.Key.Finger()` queda sin consumidor de producción (el color por dedo ahora está pintado dentro del SVG). Se conserva a propósito: es el modelo que documenta la asignación de dedos y sigue cubierto por sus tests. `keyClass` (helper de UI que ya no renderiza nada) se eliminó.
   - Slice de T5 alineado con T4: `test/keyboard_test.js` es la suite nueva; se verificó RED contra el `app.js` de `HEAD` (`app.js must expose highlightKey`) antes de dejar GREEN.
+- **L6** — 2026-10-28 · Review nativa del work unit de CI/docs (lineage `review-23126e141b60b85e`, autoridad quemada con `gentle-ai.review-acknowledged/v1`). Candidato `88190e8..a5ce454` committed-only: 4 paths, 98 líneas, tier `high` por `shell_source` en `.github/workflows/ci.yml`. Lentes `readability` + `reliability`; capture_group con forecast de 2 corridas (~29.9 KB de prompt cada una) → **`approved` directo**, sin refuter ni corrección. Findings advisory no bloqueantes: `R2-task-commit-refs` (`odd/tasks/ldvdt-ui-rework.md:22`, SUGGESTION) y `R3-001` (`.github/workflows/ci.yml:74-80`, SUGGESTION).
+  El candidato natural de la feature (`origin/main..HEAD`, 32 paths / 3829 líneas) **no se pudo revisar**: `review.start` devolvió `lens_context_budget_exceeded` sin crear autoridad, porque la evidencia inmutable incluye los dos SVG de 97 KB y el `bootstrap.min.css` de 228 KB. La revisión se reencuadró al work unit más chico con riesgo alto real (el paso de CI). Las otras cuatro unidades (T2–T5) quedan sin review nativa y sin `reviewDue` expresable: el provider sólo acepta candidatos que terminan en `HEAD`, así que no hay forma de acotar cada commit por separado.
+- **L7** — 2026-10-28 · El usuario renombró `id="rect83"` → `id="key7"` en `docs/keyboard.svg` (verificado: 48 ids `key*`, cero `rect83`, el SVG parsea como XML y el diff es de una sola línea). Copia embebida regenerada con `go generate ./internal/domain`. Se agregó `TestKeyboardSVGCoversLayout`, el gate que antes no podía existir: verifica que el diseño dibuje `#key<id>` para las 48 teclas del layout más `#space`. RED observado contra la copia vieja (`the SVG design has no id="key7" for key numeric/6 (6/>)`), GREEN después de regenerar.
+- **L8** — 2026-10-28 · Atendidos los dos advisory de `review-23126e141b60b85e` (trabajo posterior, sin re-correr la review del candidato): (1) `R2-task-commit-refs` — la línea de T6 ya lleva el hash `a5ce454`, como el resto; (2) `R3-001` — el paso de CI usaba `git diff --exit-code`, que no ve un archivo generado **nuevo** sin trackear; ahora falla con `test -z "$(git status --porcelain)"`, así que también detecta que el generador empiece a emitir un archivo distinto.
