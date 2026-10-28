@@ -1,64 +1,16 @@
 package ui
 
-import (
-	"strconv"
+import "github.com/wfrs-dev/ldvdt/internal/domain"
 
-	"github.com/wfrs-dev/ldvdt/internal/domain"
-)
-
-// Keyboard renders the full ISO keyboard, coloured by finger (S9).
+// Keyboard renders the keyboard from the SVG design (S23).
 //
-// Every row sums to the same 15 width units (see data-w and flex-grow in CSS),
-// so all rows share the same left and right edges. The Enter key is the real
-// ISO return: its top half ends the upper row and its bottom half ends the home
-// row, merged into one L-shaped key.
-//
-// Practice keys expose data-row/index/top/bottom so the client typing engine can
-// highlight the key to press for a given character (S14). Modifier keys carry no
-// such attributes, so they never take part in highlighting.
+// The design is embedded inline so the typing engine can repaint the key to
+// press, and the wrapper carries data-keymap: the character -> #key<id> mapping
+// the engine resolves, built from the id of every key in layout.yaml (S26).
+// Nothing else about the keyboard is generated here — the colours, the labels
+// and the key geometry all live in the SVG.
 templ Keyboard(kb domain.Keyboard) {
-	<div class="keyboard" id="keyboard">
-		for _, row := range kb.Rows {
-			<div class={ "keyrow keyrow-" + row.Name }>
-				switch row.Name {
-					case "upper":
-						@modKey("tab", "key-tab", "1.75")
-					case "middle":
-						@modKey("caps", "key-caps", "1")
-					case "bottom":
-						@modKey("shift", "key-shift-left", "1.75")
-				}
-				for _, k := range row.Keys {
-					<div class={ keyClass(k) } data-w="1" data-row={ row.Name } data-index={ strconv.Itoa(k.Index) } data-top={ string(k.Top) } data-bottom={ string(k.Bottom) }>
-						<span class="key-top">{ string(k.Top) }</span>
-						<span class="key-bottom">{ string(k.Bottom) }</span>
-					</div>
-				}
-				switch row.Name {
-					case "numeric":
-						@modKey("⌫", "key-backspace", "2")
-					case "upper":
-						@modKey("", "key-enter-top", "1.25")
-					case "middle":
-						@modKey("enter", "key-enter-bottom", "2")
-					case "bottom":
-						@modKey("shift", "key-shift-right", "2.25")
-				}
-			</div>
-		}
-		<div class="keyrow keyrow-space">
-			@modKey("ctrl", "key-ctrl", "1.25")
-			@modKey("super", "key-super", "1.25")
-			@modKey("alt", "key-alt", "1.25")
-			<div class="key key-mod key-space" data-w="7.5" data-bottom=" "><span class="key-bottom">espacio</span></div>
-			@modKey("altgr", "key-altgr", "1.25")
-			@modKey("super", "key-super", "1.25")
-			@modKey("ctrl", "key-ctrl", "1.25")
-		</div>
+	<div class="keyboard" id="keyboard" data-keymap={ keymapJSON(kb) }>
+		@templ.Raw(keyboardSVG)
 	</div>
-}
-
-// modKey renders a decorative modifier key with an explicit width in units.
-templ modKey(label string, cls string, width string) {
-	<div class={ "key key-mod " + cls } data-w={ width }><span class="key-bottom">{ label }</span></div>
 }

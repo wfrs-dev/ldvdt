@@ -1,54 +1,54 @@
 keyboard:
   rows:
     numeric:
-      - {top: '~', bottom: '$'}
-      - {top: '1', bottom: '&'}
-      - {top: '2', bottom: '['}
-      - {top: '3', bottom: '{'}
-      - {top: '4', bottom: '('}
-      - {top: '5', bottom: '<'}
-      - {top: '6', bottom: '>'}
-      - {top: '7', bottom: ')'}
-      - {top: '8', bottom: '}'}
-      - {top: '9', bottom: ']'}
-      - {top: '0', bottom: '/'}
-      - {top: '?', bottom: '`'}
-      - {top: '=', bottom: '+'}
+      - {id: 1, top: '~', bottom: '$'}
+      - {id: 2, top: '1', bottom: '&'}
+      - {id: 3, top: '2', bottom: '['}
+      - {id: 4, top: '3', bottom: '{'}
+      - {id: 5, top: '4', bottom: '('}
+      - {id: 6, top: '5', bottom: '<'}
+      - {id: 7, top: '6', bottom: '>'}
+      - {id: 8, top: '7', bottom: ')'}
+      - {id: 9, top: '8', bottom: '}'}
+      - {id: 10, top: '9', bottom: ']'}
+      - {id: 11, top: '0', bottom: '/'}
+      - {id: 12, top: '?', bottom: '`'}
+      - {id: 13, top: '=', bottom: '+'}
     upper:
-      - {top: 'Ñ', bottom: 'ñ'}
-      - {top: ';', bottom: ','}
-      - {top: ':', bottom: '.'}
-      - {top: 'P', bottom: 'p'}
-      - {top: 'Y', bottom: 'y'}
-      - {top: 'F', bottom: 'f'}
-      - {top: 'G', bottom: 'g'}
-      - {top: 'C', bottom: 'c'}
-      - {top: 'H', bottom: 'h'}
-      - {top: 'L', bottom: 'l'}
-      - {top: '¨', bottom: '´'}
-      - {top: '!', bottom: '^'}
+      - {id: 14, top: 'Ñ', bottom: 'ñ'}
+      - {id: 15, top: ';', bottom: ','}
+      - {id: 16, top: ':', bottom: '.'}
+      - {id: 17, top: 'P', bottom: 'p'}
+      - {id: 18, top: 'Y', bottom: 'y'}
+      - {id: 19, top: 'F', bottom: 'f'}
+      - {id: 20, top: 'G', bottom: 'g'}
+      - {id: 21, top: 'C', bottom: 'c'}
+      - {id: 22, top: 'H', bottom: 'h'}
+      - {id: 23, top: 'L', bottom: 'l'}
+      - {id: 24, top: '¨', bottom: '´'}
+      - {id: 25, top: '!', bottom: '^'}
     middle:
-      - {top: 'A', bottom: 'a'}
-      - {top: 'O', bottom: 'o'}
-      - {top: 'E', bottom: 'e'}
-      - {top: 'I', bottom: 'i'}
-      - {top: 'U', bottom: 'u'}
-      - {top: 'D', bottom: 'd'}
-      - {top: 'R', bottom: 'r'}
-      - {top: 'T', bottom: 't'}
-      - {top: 'N', bottom: 'n'}
-      - {top: 'S', bottom: 's'}
-      - {top: '"', bottom: "'"}
-      - {top: '\\', bottom: '|'}
+      - {id: 26, top: 'A', bottom: 'a'}
+      - {id: 27, top: 'O', bottom: 'o'}
+      - {id: 28, top: 'E', bottom: 'e'}
+      - {id: 29, top: 'I', bottom: 'i'}
+      - {id: 30, top: 'U', bottom: 'u'}
+      - {id: 31, top: 'D', bottom: 'd'}
+      - {id: 32, top: 'R', bottom: 'r'}
+      - {id: 33, top: 'T', bottom: 't'}
+      - {id: 34, top: 'N', bottom: 'n'}
+      - {id: 35, top: 'S', bottom: 's'}
+      - {id: 36, top: '"', bottom: "'"}
+      - {id: 37, top: '\\', bottom: '|'}
     bottom:
-      - {top: '%', bottom: '*'}
-      - {top: '_', bottom: '-'}
-      - {top: 'Q', bottom: 'q'}
-      - {top: 'J', bottom: 'j'}
-      - {top: 'K', bottom: 'k'}
-      - {top: 'X', bottom: 'x'}
-      - {top: 'B', bottom: 'b'}
-      - {top: 'M', bottom: 'm'}
-      - {top: 'W', bottom: 'w'}
-      - {top: 'V', bottom: 'v'}
-      - {top: 'Z', bottom: 'z'}
+      - {id: 38, top: '%', bottom: '*'}
+      - {id: 39, top: '_', bottom: '-'}
+      - {id: 40, top: 'Q', bottom: 'q'}
+      - {id: 41, top: 'J', bottom: 'j'}
+      - {id: 42, top: 'K', bottom: 'k'}
+      - {id: 43, top: 'X', bottom: 'x'}
+      - {id: 44, top: 'B', bottom: 'b'}
+      - {id: 45, top: 'M', bottom: 'm'}
+      - {id: 46, top: 'W', bottom: 'w'}
+      - {id: 47, top: 'V', bottom: 'v'}
+      - {id: 48, top: 'Z', bottom: 'z'}
