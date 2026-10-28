@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"html"
 	"io"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -193,6 +194,25 @@ func TestKeyboardRendersSVG(t *testing.T) {
 	// HTML document.
 	if strings.Contains(html, "<?xml") {
 		t.Error("embedded SVG still carries the XML prolog")
+	}
+}
+
+// TestKeyboardSVGCoversLayout pins that the design draws every key the layout
+// declares (S23, S26). The client resolves #key<id> from layout.yaml's ids, so a
+// key missing from the SVG loses its highlight and nothing else fails: this test
+// is the gate, and it is why the first design export (missing #key7) could not
+// ship silently.
+func TestKeyboardSVGCoversLayout(t *testing.T) {
+	for _, k := range domain.DefaultKeyboard().Keys() {
+		id := `id="key` + strconv.Itoa(k.ID) + `"`
+		if !strings.Contains(keyboardSVG, id) {
+			t.Errorf("the SVG design has no %s for key %s/%d (%c/%c)",
+				id, k.Row, k.Index, k.Top, k.Bottom)
+		}
+	}
+	// The spacebar has no layout key but the engine paints it too.
+	if !strings.Contains(keyboardSVG, `id="space"`) {
+		t.Error(`the SVG design has no id="space"`)
 	}
 }
 
