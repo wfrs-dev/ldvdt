@@ -33,6 +33,27 @@ func TestDefaultKeyboardShape(t *testing.T) {
 	}
 }
 
+// TestLayoutKeysHaveUniqueIDs pins the id field the SVG design relies on (S23):
+// every key has a positive id and no two keys share one. The client keymap is
+// exactly this mapping, so a duplicate would repaint the wrong key.
+func TestLayoutKeysHaveUniqueIDs(t *testing.T) {
+	seen := make(map[int]Key, 48)
+	for _, k := range DefaultKeyboard().Keys() {
+		if k.ID <= 0 {
+			t.Errorf("key %s/%d has id %d, want a positive id", k.Row, k.Index, k.ID)
+			continue
+		}
+		if prev, dup := seen[k.ID]; dup {
+			t.Errorf("id %d is shared by %s/%d and %s/%d",
+				k.ID, prev.Row, prev.Index, k.Row, k.Index)
+		}
+		seen[k.ID] = k
+	}
+	if len(seen) != 48 {
+		t.Errorf("distinct ids = %d, want 48", len(seen))
+	}
+}
+
 func TestFindChar(t *testing.T) {
 	kb := DefaultKeyboard()
 

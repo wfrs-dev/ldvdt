@@ -3,10 +3,9 @@ package ui
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"html"
 	"io"
-	"math"
-	"regexp"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -38,8 +37,8 @@ func TestPageRenders(t *testing.T) {
 
 	for _, want := range []string{
 		"<div class=\"keyboard\"",
-		"data-bottom=",
-		"finger-LP",
+		"data-keymap=",
+		"<svg",
 		"id=\"controls\"",
 		"id=\"words\"",
 		"Progreso",
@@ -171,70 +170,78 @@ func TestPageRendersThemeToggleAndBootstrap(t *testing.T) {
 	}
 }
 
-func TestKeyboardHasAllKeys(t *testing.T) {
-	kb := domain.DefaultKeyboard()
-	html := render(t, Keyboard(kb))
+// TestKeyboardRendersSVG pins that the keyboard is the SVG design, embedded
+// inline: an <img> or an external document would leave the keys outside the
+// DOM, where the typing engine cannot repaint them (S23, S26).
+func TestKeyboardRendersSVG(t *testing.T) {
+	html := render(t, Keyboard(domain.DefaultKeyboard()))
 
-	// 48 layout keys rendered.
-	if got := strings.Count(html, "class=\"key finger-"); got != 48 {
-		t.Errorf("rendered %d finger keys, want 48", got)
+	if !strings.Contains(html, `class="keyboard"`) {
+		t.Error("missing the #keyboard wrapper")
 	}
-
-	// The spacebar must expose data-bottom=" " so the typing engine highlights it.
-	if !strings.Contains(html, `data-bottom=" "`) {
-		t.Error("space key missing data-bottom for highlighting")
+	if !strings.Contains(html, "<svg") {
+		t.Fatal("the keyboard SVG is not embedded inline")
 	}
-
-	// Decorative modifier keys for a realistic ISO look.
-	for _, cls := range []string{
-		"key-tab", "key-caps", "key-shift-left", "key-shift-right",
-		"key-backspace", "key-enter-top", "key-enter-bottom",
-	} {
-		if !strings.Contains(html, cls) {
-			t.Errorf("missing decorative key %q", cls)
+	// The ids the engine resolves: one per layout key plus the spacebar, which
+	// is not part of layout.yaml.
+	for _, want := range []string{`id="key1"`, `id="key26"`, `id="key48"`, `id="space"`} {
+		if !strings.Contains(html, want) {
+			t.Errorf("embedded SVG missing %q", want)
 		}
 	}
-
-	// The super (Meta/Windows) key appears on both sides of the spacebar.
-	if got := strings.Count(html, "key-super"); got != 2 {
-		t.Errorf("super keys = %d, want 2", got)
+	// The design file starts with an XML prolog, which is not valid inside an
+	// HTML document.
+	if strings.Contains(html, "<?xml") {
+		t.Error("embedded SVG still carries the XML prolog")
 	}
 }
 
-// TestKeyboardRowsSameWidth enforces that every row sums to the same number of
-// width units, which is what keeps both edges of the keyboard aligned.
-func TestKeyboardRowsSameWidth(t *testing.T) {
-	kb := domain.DefaultKeyboard()
-	html := render(t, Keyboard(kb))
+// TestKeyboardKeymap pins the character -> element mapping the client uses to
+// repaint the key to press (S23). Both shift states of every key resolve to
+// #key<id>; the spacebar maps to the SVG's own #space.
+func TestKeyboardKeymap(t *testing.T) {
+	keymap := keymapOf(t, render(t, Keyboard(domain.DefaultKeyboard())))
 
-	const wantUnits = 15.0
-
-	chunks := strings.Split(html, `class="keyrow `)
-	if len(chunks) < 2 {
-		t.Fatal("no keyboard rows rendered")
+	want := map[string]string{
+		"a": "key26", "A": "key26", // middle row, both shift states
+		"6": "key7", ">": "key7", // the key the SVG design left unnamed
+		"´": "key24", "ñ": "key14", // dead key + upper row
+		"~": "key1", "z": "key48", // first and last key of the layout
+		" ": "space", // the spacebar
 	}
-
-	widthRe := regexp.MustCompile(`data-w="([0-9.]+)"`)
-	seen := 0
-	for _, chunk := range chunks[1:] {
-		name := chunk[:strings.Index(chunk, `"`)]
-		sum := 0.0
-		for _, m := range widthRe.FindAllStringSubmatch(chunk, -1) {
-			v, err := strconv.ParseFloat(m[1], 64)
-			if err != nil {
-				t.Fatalf("row %q: bad data-w %q: %v", name, m[1], err)
-			}
-			sum += v
+	for ch, id := range want {
+		if got := keymap[ch]; got != id {
+			t.Errorf("keymap[%q] = %q, want %q", ch, got, id)
 		}
-		if math.Abs(sum-wantUnits) > 1e-9 {
-			t.Errorf("row %q sums to %v units, want %v", name, sum, wantUnits)
-		}
-		seen++
 	}
 
-	if seen != 5 {
-		t.Errorf("checked %d rows, want 5", seen)
+	// 48 keys x 2 characters + the spacebar.
+	if len(keymap) != 97 {
+		t.Errorf("keymap has %d entries, want 97", len(keymap))
 	}
+}
+
+// keymapOf decodes the data-keymap attribute rendered on the keyboard wrapper.
+// templ HTML-escapes the JSON inside the attribute, so it is unescaped first.
+func keymapOf(t *testing.T, page string) map[string]string {
+	t.Helper()
+
+	const marker = `data-keymap="`
+	at := strings.Index(page, marker)
+	if at < 0 {
+		t.Fatal("the keyboard wrapper has no data-keymap")
+	}
+	rest := page[at+len(marker):]
+	end := strings.Index(rest, `"`)
+	if end < 0 {
+		t.Fatal("unterminated data-keymap attribute")
+	}
+
+	var keymap map[string]string
+	if err := json.Unmarshal([]byte(html.UnescapeString(rest[:end])), &keymap); err != nil {
+		t.Fatalf("decode data-keymap: %v", err)
+	}
+	return keymap
 }
 
 func TestPracticeRendersChars(t *testing.T) {

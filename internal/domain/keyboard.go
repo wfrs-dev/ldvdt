@@ -17,6 +17,7 @@ const (
 type Key struct {
 	Row    string // "numeric", "upper", "middle" or "bottom"
 	Index  int    // 0-based position, left to right, within the row
+	ID     int    // identifier of the key in the SVG design (#key<id>)
 	Top    rune   // character produced with SHIFT
 	Bottom rune   // character produced without SHIFT
 }
