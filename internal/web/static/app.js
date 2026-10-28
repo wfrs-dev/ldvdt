@@ -318,8 +318,10 @@
   }
 
   // cssVar reads a theme colour from the document's computed style so the
-  // chart follows the active theme (S20). Fallbacks keep the chart readable
-  // when the stylesheet or getComputedStyle is unavailable (e.g. in tests).
+  // chart follows the active theme (S20). The names are Bootstrap 5.3's own
+  // tokens, so a palette change in docs/bootstrap-theme.scss reaches the chart.
+  // Fallbacks keep the chart readable when the stylesheet or
+  // getComputedStyle is unavailable (e.g. in tests).
   function cssVar(name, fallback) {
     try {
       if (typeof getComputedStyle === "undefined") return fallback;
@@ -357,10 +359,10 @@
     const series = parseSeries(canvas);
     if (series.length === 0) return;
 
-    const accent = cssVar("--accent", "#7fb4ca");
-    const correct = cssVar("--correct", "#87a987");
-    const text = cssVar("--text", "#c5c9c7");
-    const muted = cssVar("--muted", "#a4a7a4");
+    const accent = cssVar("--bs-primary", "#26a269");
+    const correct = cssVar("--bs-success", "#198754");
+    const text = cssVar("--bs-body-color", "#212529");
+    const muted = cssVar("--bs-secondary", "#6c757d");
 
     progressChart = new Chart(canvas, {
       type: "line",
@@ -419,14 +421,16 @@
     });
   }
 
-  // ---- theme toggle (S20) ----
+  // ---- theme toggle (S20, S24) ----
 
   const THEME_KEY = "ldvdt-theme";
 
+  // The theme lives in Bootstrap's own data-bs-theme attribute, so toggling it
+  // also switches every Bootstrap component, not only this app's CSS.
   function currentTheme() {
     const el = document.documentElement;
     if (!el) return "dark";
-    return el.getAttribute("data-theme") === "light" ? "light" : "dark";
+    return el.getAttribute("data-bs-theme") === "light" ? "light" : "dark";
   }
 
   function savedTheme() {
@@ -466,7 +470,7 @@
   function applyTheme(theme) {
     const el = document.documentElement;
     const previous = currentTheme();
-    if (el) el.setAttribute("data-theme", theme);
+    if (el) el.setAttribute("data-bs-theme", theme);
     persistTheme(theme);
     setToggleLabel(theme);
     if (previous !== theme) renderProgressChart();

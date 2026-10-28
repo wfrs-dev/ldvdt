@@ -2,7 +2,7 @@
 //
 // The persisted theme is applied on startup (normally by the inline head script;
 // app.js re-confirms it and syncs the button label). Clicking the toggle then
-// alternates data-theme and stores the choice in localStorage. These tests load
+// alternates data-bs-theme and stores the choice in localStorage. These tests load
 // the real app.js with a minimal DOM/localStorage stub.
 "use strict";
 
@@ -12,7 +12,7 @@ const path = require("node:path");
 const store = { "ldvdt-theme": "light" };
 
 const htmlEl = {
-  attrs: { "data-theme": "dark" },
+  attrs: { "data-bs-theme": "dark" },
   getAttribute(name) {
     return this.attrs[name];
   },
@@ -63,7 +63,7 @@ assert.ok(api, "app.js must expose window.ldvdt");
 assert.equal(typeof api.toggleTheme, "function");
 
 // The saved value is reused on startup.
-assert.equal(htmlEl.getAttribute("data-theme"), "light", "saved theme must be applied on load");
+assert.equal(htmlEl.getAttribute("data-bs-theme"), "light", "saved theme must be applied on load");
 assert.equal(store["ldvdt-theme"], "light", "saved value must be left untouched on load");
 
 // With light active, the label announces the action: switch to dark.
@@ -72,14 +72,14 @@ assert.equal(toggle.textContent, "Tema oscuro");
 
 // Clicking the toggle alternates the theme and persists the new value.
 toggle.handlers.click();
-assert.equal(htmlEl.getAttribute("data-theme"), "dark", "toggle must switch to dark");
+assert.equal(htmlEl.getAttribute("data-bs-theme"), "dark", "toggle must switch to dark");
 assert.equal(store["ldvdt-theme"], "dark", "toggle must persist the new theme");
 assert.equal(toggle.attrs["aria-label"], "Cambiar a tema claro");
 assert.equal(toggle.textContent, "Tema claro");
 
 // And back again.
 toggle.handlers.click();
-assert.equal(htmlEl.getAttribute("data-theme"), "light", "toggle must switch back to light");
+assert.equal(htmlEl.getAttribute("data-bs-theme"), "light", "toggle must switch back to light");
 assert.equal(store["ldvdt-theme"], "light", "toggle must persist the light theme");
 assert.equal(toggle.attrs["aria-label"], "Cambiar a tema oscuro");
 assert.equal(toggle.textContent, "Tema oscuro");
