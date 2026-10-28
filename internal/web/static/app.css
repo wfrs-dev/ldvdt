@@ -1,8 +1,8 @@
 /* ldvdt trainer — page shell, keyboard and practice styles.
    Bootstrap 5.3 (vendor/bootstrap.min.css, compiled from docs/bootstrap-theme.scss)
-   owns the palette, the components and the light/dark surfaces via
-   [data-bs-theme] (S21, S24). This file only adds what Bootstrap does not have:
-   the Victor Mono faces, the three-row shell, the word strip and the keyboard. */
+   owns the palette, the components, the grid and the light/dark surfaces via
+   [data-bs-theme] (S21, S22, S24). This file only adds what Bootstrap does not
+   have: the Victor Mono faces, the word strip and the keyboard. */
 
 /* Victor Mono: only the two woff2 faces the UI uses are embedded (S19).
    The italic face drives the titles, the regular face everything else. */
@@ -29,143 +29,12 @@
   /* The key to press (S23). Not a Bootstrap role: a fixed sage tone the user
      picked for the keyboard highlight, identical in both themes. */
   --ldvdt-key-current: #bc8f8f;
-
-  --key-h: 52px;
-  --gap: 6px;
-}
-
-body {
-  /* Bootstrap paints the body; the shell only needs the full viewport. */
-  min-height: 100%;
 }
 
 /* Titles in the italic face, everything else regular (S19). */
 h1, h2, h3 { font-style: italic; }
 
-.app {
-  display: grid;
-  /* three stacked rows: controls, practice (words + keyboard), progress */
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  grid-template-columns: 1fr;
-  /* 100vh first as a fallback, 100dvh where supported so mobile browser
-     chrome does not clip the bottom row. */
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  gap: 1px;
-  /* Scroll rather than clip: the controls and progress rows are sized to their
-     content, so on a short viewport their sum can exceed the height above and
-     the progress row would otherwise be unreachable. */
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.panel {
-  background: var(--bs-tertiary-bg);
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.panel-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-}
-
-/* ---- first row: controls ---- */
-.panel-controls {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-}
-
-.controls {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-}
-
-.controls label {
-  font-size: 0.8rem;
-  color: var(--bs-secondary-color);
-  margin-top: 0;
-}
-
-.controls select,
-.controls input {
-  background: var(--bs-body-bg);
-  color: var(--bs-body-color);
-  border: 1px solid var(--bs-border-color);
-  border-radius: 6px;
-  padding: 8px;
-  font-size: 1rem;
-}
-
-.controls button {
-  margin-top: 0;
-  background: var(--bs-primary);
-  color: var(--bs-white);
-  border: none;
-  border-radius: 6px;
-  padding: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.controls button:hover { filter: brightness(1.1); }
-
-/* theme toggle: sits to the right of the controls form */
-#theme-toggle {
-  margin-left: auto;
-  background: var(--bs-primary);
-  color: var(--bs-white);
-  border: none;
-  border-radius: 6px;
-  padding: 10px 14px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-#theme-toggle:hover { filter: brightness(1.1); }
-
-/* ---- third row: progress ---- */
-.panel-progress {
-  display: grid;
-  grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
-  grid-template-areas:
-    "title title"
-    "stats chart";
-  gap: 8px 24px;
-  align-items: start;
-}
-
-.panel-progress h2 {
-  grid-area: title;
-  margin: 0;
-}
-
-.stats {
-  grid-area: stats;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 6px 12px;
-  margin: 0;
-}
-
-.stats dt { color: var(--bs-secondary-color); font-weight: 700; font-style: italic; }
-.stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
-
-.chart-box { grid-area: chart; margin-top: 0; height: 160px; }
-
-/* ---- centre: words ---- */
+/* ---- centre row: words ---- */
 .words-row {
   display: flex;
   flex-wrap: wrap;
@@ -174,6 +43,7 @@ h1, h2, h3 { font-style: italic; }
   align-items: baseline;
   max-width: 720px;
   width: 100%;
+  margin-inline: auto;
   font-size: 1.6rem;
   line-height: 2.2rem;
 }
@@ -185,7 +55,7 @@ h1, h2, h3 { font-style: italic; }
 .char.correct { color: var(--bs-success); }
 .char.incorrect { color: var(--bs-danger); background: rgba(var(--bs-danger-rgb), 0.18); }
 
-.hint { color: var(--bs-secondary-color); text-align: center; max-width: 480px; }
+.hint { color: var(--bs-secondary-color); text-align: center; max-width: 480px; margin-inline: auto; }
 
 /* Completion summary (WPM, accuracy, rhythm): centred, bold and italic, in the
    same italic voice as the headings, plus a button to start another practice. */
@@ -221,122 +91,31 @@ h1, h2, h3 { font-style: italic; }
 
 .new-practice:hover { filter: brightness(1.1); }
 
+/* ---- third row: progress ---- */
+/* Aligned figures: the stats column only reads as a column with tabular digits. */
+.stat-value { font-variant-numeric: tabular-nums; }
+
+.chart-box { height: 160px; }
+
 /* ---- keyboard ---- */
+/* The design is an inline SVG (S23): it scales with its viewBox, so the page
+   never needs key geometry of its own. The tray keeps it centred and bounded. */
 .keyboard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap);
+  width: min(100%, 880px);
+  margin-inline: auto;
   padding: 12px;
   background: var(--bs-body-bg);
   border-radius: 12px;
-  width: min(100%, 880px);
   overflow-x: auto;
 }
 
-.keyrow {
-  display: flex;
-  gap: var(--gap);
+.keyboard svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
-
-/* Every row fills the same total width. Keys grow in proportion to their
-   width units (data-w), so each row sums to exactly 15 units. */
-.key {
-  flex: 1 1 0;
-  min-width: 0;
-  height: var(--key-h);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  background: var(--bs-secondary-bg);
-  border: 1px solid var(--bs-border-color);
-  cursor: default;
-  user-select: none;
-  transition: transform 60ms ease, box-shadow 60ms ease, background 60ms ease;
-  position: relative;
-}
-
-.key-top { font-size: 0.72rem; color: var(--bs-secondary-color); line-height: 1; }
-.key-bottom { font-size: 0.95rem; color: var(--bs-body-color); line-height: 1.1; }
-
-/* finger colours (top border accent), mapped onto the palette's semantic roles */
-.finger-LP { border-top: 3px solid var(--bs-danger); }
-.finger-LR { border-top: 3px solid var(--bs-warning); }
-.finger-LM { border-top: 3px solid var(--bs-success); }
-.finger-LI { border-top: 3px solid var(--bs-info); }
-.finger-RI { border-top: 3px solid var(--bs-primary); }
-.finger-RM { border-top: 3px solid var(--bs-secondary); }
-.finger-RR { border-top: 3px solid var(--bs-light); }
-.finger-RP { border-top: 3px solid var(--bs-danger); }
-.finger-TH { border-top: 3px solid var(--bs-border-color); }
-
-/* highlight states applied by the typing engine */
-.key.active {
-  background: var(--bs-tertiary-bg);
-  box-shadow: inset 0 0 0 2px var(--bs-primary);
-}
-
-.key.current {
-  background: var(--ldvdt-key-current);
-  border-color: var(--ldvdt-key-current);
-  color: var(--bs-dark);
-  transform: translateY(2px);
-}
-.key.current .key-top,
-.key.current .key-bottom { color: var(--bs-dark); }
-
-/* width units: flex-grow proportional to the key's physical width */
-.key[data-w="1"]    { flex-grow: 1; }
-.key[data-w="1.25"] { flex-grow: 1.25; }
-.key[data-w="1.75"] { flex-grow: 1.75; }
-.key[data-w="2"]    { flex-grow: 2; }
-.key[data-w="2.25"] { flex-grow: 2.25; }
-.key[data-w="7.5"]  { flex-grow: 7.5; }
-
-/* decorative modifier keys: same neutral colour */
-.key-mod {
-  background: var(--bs-tertiary-bg);
-  border-color: var(--bs-border-color);
-}
-.key-mod .key-bottom { font-size: 0.72rem; color: var(--bs-secondary-color); }
-
-/* ISO Enter: a single L-shaped key split in two halves that merge.
-   The top half closes the upper row and bridges the row gap; the bottom half
-   closes the home row, exposing only its left part with a top border. */
-.key-enter-top {
-  position: relative;
-  z-index: 2;
-  height: calc(var(--key-h) + var(--gap));
-  margin-bottom: calc(var(--gap) * -1);
-  border-bottom: none;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-.key-enter-bottom {
-  position: relative;
-  z-index: 1;
-  border-top: none;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  /* the notch: a top edge only where the narrow upper half does not cover it */
-  box-shadow: 0 -1px 0 0 var(--bs-border-color);
-}
-
-/* the spacebar keeps the modifier look but reads as a normal key face */
-.key-space .key-bottom { font-size: 0.8rem; }
 
 /* ---- responsive ---- */
 @media (max-width: 900px) {
-  .panel { padding: 10px; }
-  :root { --key-h: 38px; --gap: 5px; }
-  .panel-progress {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "title"
-      "stats"
-      "chart";
-  }
+  .keyboard { padding: 6px; }
 }

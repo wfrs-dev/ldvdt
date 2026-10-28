@@ -3,9 +3,9 @@ package ui
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"html"
 	"io"
-	"math"
-	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -38,8 +38,8 @@ func TestPageRenders(t *testing.T) {
 
 	for _, want := range []string{
 		"<div class=\"keyboard\"",
-		"data-bottom=",
-		"finger-LP",
+		"data-keymap=",
+		"<svg",
 		"id=\"controls\"",
 		"id=\"words\"",
 		"Progreso",
@@ -50,38 +50,86 @@ func TestPageRenders(t *testing.T) {
 	}
 }
 
-// TestPageStacksThreeRows pins the row order of the SPA shell (S8): controls
-// first, then the words and keyboard, then the progress panel. app.css lays
-// these three regions out as stacked rows, so document order is what the user
-// actually sees.
+// TestPageStacksThreeRows pins the shell structure of S22: everything lives
+// inside a single Bootstrap .container, and the three rows keep their order —
+// controls, then the words and keyboard, then the progress panel. Document order
+// is what the user sees, because the rows stack.
 func TestPageStacksThreeRows(t *testing.T) {
 	html := renderPage(t)
 
-	controls := strings.Index(html, `class="panel panel-controls"`)
-	words := strings.Index(html, `id="words"`)
-	progress := strings.Index(html, `id="progress-panel"`)
-
-	if controls < 0 || words < 0 || progress < 0 {
-		t.Fatalf("missing region: controls=%d words=%d progress=%d", controls, words, progress)
+	container := strings.Index(html, `<div class="container`)
+	if container < 0 {
+		t.Fatal("page is not wrapped in a Bootstrap container")
 	}
-	if !(controls < words && words < progress) {
-		t.Errorf("region order = controls:%d words:%d progress:%d, want controls < words < progress",
-			controls, words, progress)
+
+	// Each row is a Bootstrap .row carrying its own id, so the grid classes and
+	// the document order can be checked together.
+	rows := []string{"controls-row", "practice-row", "progress-panel"}
+	previous := container
+	for _, id := range rows {
+		tag, at := tagOf(t, html, `id="`+id+`"`)
+		if !strings.Contains(tag, `class="row`) {
+			t.Errorf("row %q is not a Bootstrap row: %s", id, tag)
+		}
+		if at < previous {
+			t.Errorf("row %q at %d must come after the previous region at %d", id, at, previous)
+		}
+		previous = at
 	}
 
 	// The configuration form belongs to the first row.
 	form := strings.Index(html, `id="controls"`)
-	if form < controls || form > words {
-		t.Errorf("controls form at %d, want between the first panel (%d) and the words (%d)",
-			form, controls, words)
+	words := strings.Index(html, `id="words"`)
+	if form < container || words < container {
+		t.Fatalf("form or words outside the container: form=%d words=%d container=%d",
+			form, words, container)
+	}
+	if form > words {
+		t.Errorf("controls form at %d must precede the words at %d", form, words)
 	}
 
-	// The retired column classes must not linger.
-	for _, gone := range []string{"panel-left", "panel-right"} {
+	// The retired layout classes must not linger.
+	for _, gone := range []string{"panel-left", "panel-right", "class=\"app\"", "panel-controls", "panel-progress"} {
 		if strings.Contains(html, gone) {
-			t.Errorf("page still uses the retired column class %q", gone)
+			t.Errorf("page still uses the retired layout class %q", gone)
 		}
 	}
+}
+
+// TestPageUsesBootstrapComponents pins that the interactive parts are real
+// Bootstrap controls (S21), not app CSS pretending to be one: without the
+// component classes the themed build never reaches the form.
+func TestPageUsesBootstrapComponents(t *testing.T) {
+	html := renderPage(t)
+
+	for _, want := range []string{
+		`class="form-select`,
+		`class="form-control`,
+		`class="btn btn-primary`,
+		`class="btn btn-outline-secondary`,
+		`class="form-label`,
+	} {
+		if !strings.Contains(html, want) {
+			t.Errorf("page HTML missing Bootstrap component %q", want)
+		}
+	}
+}
+
+// tagOf returns the opening tag that carries marker and its offset, so a test
+// can assert the attributes of the element with a given id without an HTML
+// parser.
+func tagOf(t *testing.T, html, marker string) (string, int) {
+	t.Helper()
+	at := strings.Index(html, marker)
+	if at < 0 {
+		t.Fatalf("marker %q not found", marker)
+	}
+	start := strings.LastIndex(html[:at], "<")
+	end := strings.Index(html[at:], ">")
+	if start < 0 || end < 0 {
+		t.Fatalf("marker %q is not inside a tag", marker)
+	}
+	return html[start : at+end+1], at
 }
 
 // TestPageRendersThemeToggleAndBootstrap pins the theme plumbing the client
@@ -123,74 +171,101 @@ func TestPageRendersThemeToggleAndBootstrap(t *testing.T) {
 	}
 }
 
-func TestKeyboardHasAllKeys(t *testing.T) {
-	kb := domain.DefaultKeyboard()
-	html := render(t, Keyboard(kb))
+// TestKeyboardRendersSVG pins that the keyboard is the SVG design, embedded
+// inline: an <img> or an external document would leave the keys outside the
+// DOM, where the typing engine cannot repaint them (S23, S26).
+func TestKeyboardRendersSVG(t *testing.T) {
+	html := render(t, Keyboard(domain.DefaultKeyboard()))
 
-	// 48 layout keys rendered.
-	if got := strings.Count(html, "class=\"key finger-"); got != 48 {
-		t.Errorf("rendered %d finger keys, want 48", got)
+	if !strings.Contains(html, `class="keyboard"`) {
+		t.Error("missing the #keyboard wrapper")
 	}
-
-	// The spacebar must expose data-bottom=" " so the typing engine highlights it.
-	if !strings.Contains(html, `data-bottom=" "`) {
-		t.Error("space key missing data-bottom for highlighting")
+	if !strings.Contains(html, "<svg") {
+		t.Fatal("the keyboard SVG is not embedded inline")
 	}
-
-	// Decorative modifier keys for a realistic ISO look.
-	for _, cls := range []string{
-		"key-tab", "key-caps", "key-shift-left", "key-shift-right",
-		"key-backspace", "key-enter-top", "key-enter-bottom",
-	} {
-		if !strings.Contains(html, cls) {
-			t.Errorf("missing decorative key %q", cls)
+	// The ids the engine resolves: one per layout key plus the spacebar, which
+	// is not part of layout.yaml.
+	for _, want := range []string{`id="key1"`, `id="key26"`, `id="key48"`, `id="space"`} {
+		if !strings.Contains(html, want) {
+			t.Errorf("embedded SVG missing %q", want)
 		}
 	}
-
-	// The super (Meta/Windows) key appears on both sides of the spacebar.
-	if got := strings.Count(html, "key-super"); got != 2 {
-		t.Errorf("super keys = %d, want 2", got)
+	// The design file starts with an XML prolog, which is not valid inside an
+	// HTML document.
+	if strings.Contains(html, "<?xml") {
+		t.Error("embedded SVG still carries the XML prolog")
 	}
 }
 
-// TestKeyboardRowsSameWidth enforces that every row sums to the same number of
-// width units, which is what keeps both edges of the keyboard aligned.
-func TestKeyboardRowsSameWidth(t *testing.T) {
-	kb := domain.DefaultKeyboard()
-	html := render(t, Keyboard(kb))
-
-	const wantUnits = 15.0
-
-	chunks := strings.Split(html, `class="keyrow `)
-	if len(chunks) < 2 {
-		t.Fatal("no keyboard rows rendered")
-	}
-
-	widthRe := regexp.MustCompile(`data-w="([0-9.]+)"`)
-	seen := 0
-	for _, chunk := range chunks[1:] {
-		name := chunk[:strings.Index(chunk, `"`)]
-		sum := 0.0
-		for _, m := range widthRe.FindAllStringSubmatch(chunk, -1) {
-			v, err := strconv.ParseFloat(m[1], 64)
-			if err != nil {
-				t.Fatalf("row %q: bad data-w %q: %v", name, m[1], err)
-			}
-			sum += v
+// TestKeyboardSVGCoversLayout pins that the design draws every key the layout
+// declares (S23, S26). The client resolves #key<id> from layout.yaml's ids, so a
+// key missing from the SVG loses its highlight and nothing else fails: this test
+// is the gate, and it is why the first design export (missing #key7) could not
+// ship silently.
+func TestKeyboardSVGCoversLayout(t *testing.T) {
+	for _, k := range domain.DefaultKeyboard().Keys() {
+		id := `id="key` + strconv.Itoa(k.ID) + `"`
+		if !strings.Contains(keyboardSVG, id) {
+			t.Errorf("the SVG design has no %s for key %s/%d (%c/%c)",
+				id, k.Row, k.Index, k.Top, k.Bottom)
 		}
-		if math.Abs(sum-wantUnits) > 1e-9 {
-			t.Errorf("row %q sums to %v units, want %v", name, sum, wantUnits)
+	}
+	// The spacebar has no layout key but the engine paints it too.
+	if !strings.Contains(keyboardSVG, `id="space"`) {
+		t.Error(`the SVG design has no id="space"`)
+	}
+}
+
+// TestKeyboardKeymap pins the character -> element mapping the client uses to
+// repaint the key to press (S23). Both shift states of every key resolve to
+// #key<id>; the spacebar maps to the SVG's own #space.
+func TestKeyboardKeymap(t *testing.T) {
+	keymap := keymapOf(t, render(t, Keyboard(domain.DefaultKeyboard())))
+
+	want := map[string]string{
+		"a": "key26", "A": "key26", // middle row, both shift states
+		"6": "key7", ">": "key7", // the key the SVG design left unnamed
+		"´": "key24", "ñ": "key14", // dead key + upper row
+		"~": "key1", "z": "key48", // first and last key of the layout
+		" ": "space", // the spacebar
+	}
+	for ch, id := range want {
+		if got := keymap[ch]; got != id {
+			t.Errorf("keymap[%q] = %q, want %q", ch, got, id)
 		}
-		seen++
 	}
 
-	if seen != 5 {
-		t.Errorf("checked %d rows, want 5", seen)
+	// 48 keys x 2 characters + the spacebar.
+	if len(keymap) != 97 {
+		t.Errorf("keymap has %d entries, want 97", len(keymap))
 	}
+}
+
+// keymapOf decodes the data-keymap attribute rendered on the keyboard wrapper.
+// templ HTML-escapes the JSON inside the attribute, so it is unescaped first.
+func keymapOf(t *testing.T, page string) map[string]string {
+	t.Helper()
+
+	const marker = `data-keymap="`
+	at := strings.Index(page, marker)
+	if at < 0 {
+		t.Fatal("the keyboard wrapper has no data-keymap")
+	}
+	rest := page[at+len(marker):]
+	end := strings.Index(rest, `"`)
+	if end < 0 {
+		t.Fatal("unterminated data-keymap attribute")
+	}
+
+	var keymap map[string]string
+	if err := json.Unmarshal([]byte(html.UnescapeString(rest[:end])), &keymap); err != nil {
+		t.Fatalf("decode data-keymap: %v", err)
+	}
+	return keymap
 }
 
 func TestPracticeRendersChars(t *testing.T) {
-	html := render(t, Practice([]string{"isla", "otro"}, 1, "es", 2, "aoeiudrtns", ""))
+	html := render(t, Practice([]string{"isla", "otro"}, 1, "es", 2, ""))
 
 	if !strings.Contains(html, `data-level="1"`) {
 		t.Error("missing data-level")
@@ -200,9 +275,6 @@ func TestPracticeRendersChars(t *testing.T) {
 	}
 	if !strings.Contains(html, `<span class="char">i</span>`) {
 		t.Error("missing per-char span")
-	}
-	if !strings.Contains(html, `data-keys="aoeiudrtns"`) {
-		t.Error("missing data-keys")
 	}
 	if !strings.Contains(html, `data-accents=`) {
 		t.Error("missing data-accents attribute")

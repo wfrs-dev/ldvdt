@@ -4,14 +4,37 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/wfrs-dev/ldvdt/internal/domain"
 )
 
-// keyClass returns the CSS class for a key, including its finger color group.
-func keyClass(k domain.Key) string {
-	return "key finger-" + string(k.Finger())
+// SpaceKeyID is the SVG id of the spacebar. The spacebar is not part of
+// layout.yaml, which describes the 48 character keys, so its id is named here.
+const SpaceKeyID = "space"
+
+// keymapJSON returns the character -> SVG element id map the client engine uses
+// to repaint the key to press (S23). Both shift states of a key resolve to the
+// same element: the SVG key is one rect regardless of SHIFT. The spacebar has no
+// layout key and maps to the design's own #space.
+func keymapJSON(kb domain.Keyboard) string {
+	keys := kb.Keys()
+	keymap := make(map[string]string, 2*len(keys)+1)
+	for _, k := range keys {
+		id := "key" + strconv.Itoa(k.ID)
+		keymap[string(k.Top)] = id
+		keymap[string(k.Bottom)] = id
+	}
+	keymap[" "] = SpaceKeyID
+
+	encoded, err := json.Marshal(keymap)
+	if err != nil {
+		// A map[string]string cannot fail to marshal; the empty map keeps the
+		// page usable instead of rendering a broken attribute.
+		return "{}"
+	}
+	return string(encoded)
 }
 
 // formatDuration renders milliseconds as a compact human duration.

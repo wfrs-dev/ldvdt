@@ -24,45 +24,79 @@
   // A dead key was pressed and its composition is not resolved yet.
   let pendingDead = false;
 
-  // Build a char -> key lookup from the on-screen keyboard DOM.
+  // ---- keyboard highlighting (S23) ----
+
+  // The fill the key to press is painted with. It lives in app.css as
+  // --ldvdt-key-current so the palette stays in one place; the fallback is the
+  // colour the user asked for.
+  const CURRENT_KEY_FILL_FALLBACK = "#bc8f8f";
+
+  // char -> SVG element id ("key26", "space"), rendered by the server on
+  // #keyboard from the ids in docs/layout.yaml.
+  let keyMap = new Map();
+
+  // element id -> the fill the SVG design declares, captured before the first
+  // repaint so leaving a key restores its own colour exactly.
+  const originalFill = new Map();
+
+  // Elements currently painted as "the key to press".
+  const paintedKeys = new Set();
+
   function buildKeyMap() {
-    const map = new Map();
-    document.querySelectorAll("#keyboard .key[data-bottom], #keyboard .key[data-top]").forEach((k) => {
-      if (k.dataset.bottom) map.set(k.dataset.bottom, k);
-      if (k.dataset.top) map.set(k.dataset.top, k);
-    });
-    return map;
+    const wrapper = document.getElementById("keyboard");
+    if (!wrapper || !wrapper.dataset || !wrapper.dataset.keymap) return new Map();
+    try {
+      return new Map(Object.entries(JSON.parse(wrapper.dataset.keymap)));
+    } catch (err) {
+      console.error("invalid keyboard keymap", err);
+      return new Map();
+    }
   }
 
-  let keyMap = buildKeyMap();
+  keyMap = buildKeyMap();
 
-  function clearActiveKeys() {
-    document.querySelectorAll("#keyboard .key.active").forEach((k) => k.classList.remove("active"));
+  // keyElement resolves a character to the SVG key that produces it. A missing
+  // entry or a missing element is not an error: it only means that character
+  // gets no highlight (the design may not draw every key yet).
+  function keyElement(ch) {
+    const id = keyMap.get(ch);
+    if (!id) return null;
+    return document.getElementById(id) || null;
+  }
+
+  function currentFill() {
+    return cssVar("--ldvdt-key-current", CURRENT_KEY_FILL_FALLBACK);
+  }
+
+  function paintKey(el) {
+    if (!originalFill.has(el.id)) originalFill.set(el.id, el.style.fill || "");
+    el.style.fill = currentFill();
+    paintedKeys.add(el);
+  }
+
+  function restoreKey(el) {
+    if (originalFill.has(el.id)) el.style.fill = originalFill.get(el.id);
   }
 
   function clearCurrentKeys() {
-    document.querySelectorAll("#keyboard .key.current").forEach((k) => k.classList.remove("current"));
+    paintedKeys.forEach(restoreKey);
+    paintedKeys.clear();
   }
 
-  // markKeys adds a class to every key that produces ch: a direct key, or the
-  // pair (dead key + base letter) for an accented character (S14).
-  function markKeys(ch, cls) {
+  // markKeys paints every key that produces ch: a direct key, or the pair
+  // (dead key + base letter) for an accented character (S14).
+  function markKeys(ch) {
     const hint = state.accents[ch];
-    if (hint) {
-      const dead = keyMap.get(hint.dead);
-      if (dead) dead.classList.add(cls);
-      const base = keyMap.get(hint.base);
-      if (base) base.classList.add(cls);
-      return;
+    const chars = hint ? [hint.dead, hint.base] : [ch];
+    for (const c of chars) {
+      const el = keyElement(c);
+      if (el) paintKey(el);
     }
-    const k = keyMap.get(ch);
-    if (k) k.classList.add(cls);
   }
 
-  function highlightPracticeKeys(keys) {
-    clearActiveKeys();
-    if (!keys) return;
-    for (const ch of keys) markKeys(ch, "active");
+  function highlightKey(ch) {
+    clearCurrentKeys();
+    markKeys(ch);
   }
 
   function highlightCurrentChar() {
@@ -71,11 +105,6 @@
       const el = state.charEls[state.charPos];
       if (el) el.classList.add("current");
     }
-  }
-
-  function highlightKey(ch) {
-    clearCurrentKeys();
-    markKeys(ch, "current");
   }
 
   function reset() {
@@ -109,7 +138,6 @@
     state.count = parseInt(root.dataset.count || "20", 10);
     state.accents = root.dataset.accents ? JSON.parse(root.dataset.accents) : {};
 
-    highlightPracticeKeys(root.dataset.keys);
     highlightCurrentChar();
     highlightKey(state.target[0]);
 
@@ -502,5 +530,5 @@
   initTheme();
   renderProgressChart();
 
-  window.ldvdt = { startPractice, startNewPractice, buildPracticeSummary, showSummary, composeTyped, renderProgressChart, toggleTheme, applyTheme, initTheme };
+  window.ldvdt = { startPractice, startNewPractice, buildPracticeSummary, showSummary, composeTyped, renderProgressChart, toggleTheme, applyTheme, initTheme, highlightKey, clearCurrentKeys };
 })();

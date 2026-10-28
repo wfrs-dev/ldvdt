@@ -1,9 +1,16 @@
 // Command genlayout reads docs/layout.yaml and emits the fixed Go keyboard
 // literal consumed by the domain package. It runs at build time (go:generate);
 // the produced layout_gen.go is committed and the yaml is never read at runtime.
+//
+// It also copies the keyboard design (docs/keyboard.svg) into the ui package,
+// which embeds it in the page. The design file lives under docs/ with the other
+// sources; the embedded copy is generated, committed, and checked by CI, exactly
+// like layout_gen.go. The XML prolog is dropped because the SVG is inlined into
+// an HTML document, where it is not valid.
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
@@ -14,6 +21,7 @@ import (
 )
 
 type yamlKey struct {
+	ID     int    `yaml:"id"`
 	Top    string `yaml:"top"`
 	Bottom string `yaml:"bottom"`
 }
@@ -29,6 +37,8 @@ var rowOrder = []string{"numeric", "upper", "middle", "bottom"}
 func main() {
 	yamlPath := flag.String("yaml", "docs/layout.yaml", "path to layout.yaml")
 	outPath := flag.String("out", "internal/domain/layout_gen.go", "output Go file")
+	svgPath := flag.String("svg", "", "path to the keyboard SVG design (optional)")
+	svgOut := flag.String("svgout", "", "output path for the embedded SVG copy (required with -svg)")
 	flag.Parse()
 
 	data, err := os.ReadFile(*yamlPath)
@@ -39,6 +49,21 @@ func main() {
 	var doc yamlDoc
 	if err := yaml.Unmarshal(data, &doc); err != nil {
 		fatal("parse layout: %v", err)
+	}
+
+	// The ids are the bridge to the SVG: the client resolves #key<id> from them,
+	// so a missing or duplicated id would silently break the key highlight.
+	seen := make(map[int]string, 48)
+	for _, name := range rowOrder {
+		for i, k := range doc.Keyboard.Rows[name] {
+			if k.ID <= 0 {
+				fatal("layout.yaml: key %s/%d has no id", name, i)
+			}
+			if prev, dup := seen[k.ID]; dup {
+				fatal("layout.yaml: id %d is used by both %s and %s/%d", k.ID, prev, name, i)
+			}
+			seen[k.ID] = fmt.Sprintf("%s/%d", name, i)
+		}
 	}
 
 	var b strings.Builder
@@ -54,8 +79,8 @@ func main() {
 		}
 		fmt.Fprintf(&b, "\t\t{Name: %q, Keys: []Key{\n", name)
 		for i, k := range keys {
-			fmt.Fprintf(&b, "\t\t\t{Row: %q, Index: %d, Top: %s, Bottom: %s},\n",
-				name, i, runeLit(k.Top), runeLit(k.Bottom))
+			fmt.Fprintf(&b, "\t\t\t{Row: %q, Index: %d, ID: %d, Top: %s, Bottom: %s},\n",
+				name, i, k.ID, runeLit(k.Top), runeLit(k.Bottom))
 		}
 		b.WriteString("\t\t}},\n")
 	}
@@ -69,6 +94,39 @@ func main() {
 		fatal("write: %v", err)
 	}
 	fmt.Printf("genlayout: wrote %s (%d rows)\n", *outPath, len(rowOrder))
+
+	if *svgPath == "" && *svgOut == "" {
+		return
+	}
+	if *svgPath == "" || *svgOut == "" {
+		fatal("-svg and -svgout must be used together")
+	}
+	svg, err := os.ReadFile(*svgPath)
+	if err != nil {
+		fatal("read svg: %v", err)
+	}
+	svg = stripXMLProlog(svg)
+	if err := os.MkdirAll(filepath.Dir(*svgOut), 0o755); err != nil {
+		fatal("mkdir: %v", err)
+	}
+	if err := os.WriteFile(*svgOut, svg, 0o644); err != nil {
+		fatal("write svg: %v", err)
+	}
+	fmt.Printf("genlayout: wrote %s (%d bytes)\n", *svgOut, len(svg))
+}
+
+// stripXMLProlog removes a leading <?xml ... ?> declaration, which is only valid
+// in a standalone XML document and not in the HTML the SVG is inlined into.
+func stripXMLProlog(svg []byte) []byte {
+	trimmed := bytes.TrimLeft(svg, " \t\r\n")
+	if !bytes.HasPrefix(trimmed, []byte("<?xml")) {
+		return svg
+	}
+	end := bytes.Index(trimmed, []byte("?>"))
+	if end < 0 {
+		return svg
+	}
+	return bytes.TrimLeft(trimmed[end+2:], "\r\n")
 }
 
 func runeLit(s string) string {

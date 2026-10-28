@@ -7,14 +7,17 @@ cumulative difficulty levels.
 The binary serves a server-rendered SPA, stores your progress in SQLite, and
 opens your default browser.
 
+The page is a single Bootstrap container with three stacked rows:
+
 ```
-┌──────────────┬───────────────────────────────┬──────────────┐
-│  Progress    │  Words to type                │  Level       │
-│  + chart     │  ┌─────────────────────────┐  │  Language    │
-│              │  │  isla  otro  sol  ...   │  │  Word count  │
-│              │  └─────────────────────────┘  │  [ Empezar ] │
-│              │  ISO keyboard (finger colours)│              │
-└──────────────┴───────────────────────────────┴──────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ Level · Language · Word count · [ Empezar ]      [ Theme ]   │
+├──────────────────────────────────────────────────────────────┤
+│                  isla  otro  sol  ...                        │
+│            ISO keyboard, drawn as an inline SVG              │
+├──────────────────────────────────────────────────────────────┤
+│ Progress: stats + chart                                      │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ## Requirements
@@ -22,6 +25,7 @@ opens your default browser.
 - Go 1.27+ (no CGO needed: the SQLite driver is pure Go)
 - `templ` (only when regenerating templates): `go install github.com/a-h/templ/cmd/templ@v0.3.1070`
 - Node.js (only for the JavaScript tests)
+- Dart Sass (only when rebuilding the vendored Bootstrap theme, see below)
 
 ## Run
 
@@ -47,23 +51,54 @@ GOOS=linux   GOARCH=arm64 go build -o ldvdt     ./cmd/ldvdt
 ## Tests
 
 ```bash
-go test ./...                # Go: domain, corpus, storage, handlers, UI, browser
-node test/app_test.js        # dead-key composition in the typing engine
-node test/chart_test.js      # progress chart rendering
+go test ./...                    # Go: domain, corpus, storage, handlers, UI, browser
+node test/app_test.js            # dead-key composition in the typing engine
+node test/chart_test.js          # progress chart rendering
+node test/keyboard_test.js       # SVG keyboard highlight and restore
+node test/new_practice_test.js   # "Nueva práctica" restart button
+node test/theme_test.js          # light/dark theme toggle
 ```
+
+The JS suites are plain Node scripts with no dependencies; CI runs every
+`test/*.js`.
 
 ## Code generation
 
-The keyboard is generated from `docs/layout.yaml` **at build time** and then
+The keyboard layout comes from `docs/layout.yaml` **at build time** and is then
 embedded in the binary; the YAML is never read at runtime.
 
 ```bash
-go generate ./internal/domain/   # docs/layout.yaml -> internal/domain/layout_gen.go
+go generate ./internal/domain/   # layout_gen.go + the embedded SVG copy
 templ generate                   # *.templ -> *_templ.go
 ```
 
-Commit the generated files. `go generate` must be re-run after any change to
-`docs/layout.yaml`.
+| Source | Generated | What it is |
+| ------ | --------- | ---------- |
+| `docs/layout.yaml` | `internal/domain/layout_gen.go` | the fixed 48-key layout, including the `id` that names each key in the SVG |
+| `docs/keyboard.svg` | `internal/web/ui/keyboard.svg` | the keyboard design, embedded inline in the page (XML prolog stripped) |
+
+Commit the generated files: CI runs both commands and fails on a dirty diff.
+Re-run `go generate` after any change to `docs/layout.yaml` or
+`docs/keyboard.svg`.
+
+## Bootstrap theme
+
+Bootstrap is vendored **compiled from Sass**, not patched with overrides:
+Bootstrap 5.3 hardcodes the palette inside its components (`.btn-primary`,
+the form focus ring), so overriding `--bs-primary` alone would leave them on the
+defaults.
+
+```bash
+npm pack bootstrap@5.3.3 && tar -xzf bootstrap-5.3.3.tgz   # provides package/scss
+npx sass --no-source-map --no-charset --style=compressed --quiet-deps \
+  --load-path=package/scss \
+  docs/bootstrap-theme.scss internal/web/static/vendor/bootstrap.min.css
+```
+
+`docs/bootstrap-theme.scss` holds the palette (`primary: #26a269`, the rest the
+Bootstrap defaults) and is the only file to edit. Only the CSS is vendored: the
+theme switch uses `data-bs-theme`, which is pure CSS, and no JavaScript
+component (dropdown, modal, tooltip) is used.
 
 ## Architecture
 
@@ -78,9 +113,9 @@ internal/port             Storage port (interface)
 internal/infra/storage    SQLite adapter (modernc.org/sqlite)
 internal/infra/browser    opens the default browser (Linux/Windows/macOS)
 internal/trainer          HTTP handlers + use cases + routes
-internal/web/ui           templ components (page, keyboard, progress)
-internal/web/static       embedded CSS/JS + vendored htmx and Chart.js
-internal/tools/genlayout  layout.yaml -> Go literal generator
+internal/web/ui           templ components (page, keyboard SVG, progress)
+internal/web/static       embedded CSS/JS + vendored Bootstrap, htmx and Chart.js
+internal/tools/genlayout  layout.yaml -> Go literal + SVG copy generator
 resources                 embedded practice corpora (eng.dat, spa.dat)
 ```
 
