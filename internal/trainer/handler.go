@@ -68,7 +68,7 @@ func (h *Handler) Practice(c *echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	return renderComponent(c, ui.Practice(words, lvl.Number, string(lang), len(words), string(lvl.NewChars), h.accentsJSON(lvl)))
+	return renderComponent(c, ui.Practice(words, lvl.Number, string(lang), len(words), h.accentsJSON(lvl)))
 }
 
 // Submit persists a completed practice and returns the updated stats as JSON.
