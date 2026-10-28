@@ -48,16 +48,17 @@ global.Chart = class Chart {
 
 global.window = {};
 
-// The chart must read its colours from the CSS theme variables (S20), so stub
-// getComputedStyle with a known palette and pin the values below.
+// The chart must read its colours from the CSS theme variables (S20, S21), so
+// stub getComputedStyle with a known palette and pin the values below. The name
+// is Bootstrap's own token, so the Sass theme reaches the chart.
 global.getComputedStyle = function () {
   return {
     getPropertyValue(name) {
       return {
-        "--accent": "#4d699b",
-        "--correct": "#6f894e",
-        "--text": "#545464",
-        "--muted": "#8a8980",
+        "--bs-primary": "#26a269",
+        "--bs-success": "#198754",
+        "--bs-body-color": "#212529",
+        "--bs-secondary": "#6c757d",
       }[name] || "";
     },
   };
@@ -85,12 +86,12 @@ assert.deepEqual(datasets[0].data, [22.5, 28.0, 31.2]);
 assert.deepEqual(datasets[1].data, [91.0, 95.5, 97.0]);
 
 // Colours come from the CSS variables read at render time.
-assert.equal(datasets[0].borderColor, "#4d699b", "WPM line must use --accent");
-assert.equal(datasets[0].backgroundColor, "rgba(77,105,155,0.15)");
-assert.equal(datasets[1].borderColor, "#6f894e", "accuracy line must use --correct");
-assert.equal(datasets[1].backgroundColor, "rgba(111,137,78,0.12)");
-assert.equal(chart.config.options.plugins.legend.labels.color, "#545464");
-assert.equal(chart.config.options.scales.x.ticks.color, "#8a8980");
+assert.equal(datasets[0].borderColor, "#26a269", "WPM line must use --bs-primary");
+assert.equal(datasets[0].backgroundColor, "rgba(38,162,105,0.15)");
+assert.equal(datasets[1].borderColor, "#198754", "accuracy line must use --bs-success");
+assert.equal(datasets[1].backgroundColor, "rgba(25,135,84,0.12)");
+assert.equal(chart.config.options.plugins.legend.labels.color, "#212529");
+assert.equal(chart.config.options.scales.x.ticks.color, "#6c757d");
 
 // The chart is responsive and fills its box.
 assert.equal(chart.config.options.maintainAspectRatio, false);

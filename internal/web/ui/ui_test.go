@@ -85,30 +85,41 @@ func TestPageStacksThreeRows(t *testing.T) {
 }
 
 // TestPageRendersThemeToggleAndBootstrap pins the theme plumbing the client
-// needs (S20): the manual toggle in the first row and the inline head script
-// that applies the persisted theme before first paint.
+// needs (S20, S24): the manual toggle in the first row, the Bootstrap theme
+// attribute, the inline head script that applies the persisted theme before
+// first paint, and the vendored Bootstrap stylesheet loading before app.css.
 func TestPageRendersThemeToggleAndBootstrap(t *testing.T) {
 	html := renderPage(t)
 
 	if !strings.Contains(html, `id="theme-toggle"`) {
 		t.Error("page missing the theme toggle button")
 	}
-	if !strings.Contains(html, `data-theme="dark"`) {
-		t.Error("page missing the dark default data-theme attribute")
+	if !strings.Contains(html, `data-bs-theme="dark"`) {
+		t.Error("page missing the dark default data-bs-theme attribute")
 	}
 	if !strings.Contains(html, `localStorage.getItem("ldvdt-theme")`) {
 		t.Error("inline bootstrap must read the ldvdt-theme localStorage key")
 	}
-	if !strings.Contains(html, `setAttribute("data-theme", theme)`) {
+	if !strings.Contains(html, `setAttribute("data-bs-theme", theme)`) {
 		t.Error("inline bootstrap must apply the saved theme before first paint")
 	}
-	// The bootstrap has to run before the stylesheet, otherwise the first paint
+
+	// The bootstrap has to run before the stylesheets, otherwise the first paint
 	// can use the wrong palette. That ordering is the whole point of the script,
 	// so it is pinned instead of the exact source text.
 	bootstrap := strings.Index(html, `localStorage.getItem("ldvdt-theme")`)
-	stylesheet := strings.Index(html, `rel="stylesheet"`)
-	if bootstrap < 0 || stylesheet < 0 || bootstrap > stylesheet {
-		t.Errorf("theme bootstrap at %d must precede the stylesheet at %d", bootstrap, stylesheet)
+	bootstrapCSS := strings.Index(html, `href="/static/vendor/bootstrap.min.css"`)
+	appCSS := strings.Index(html, `href="/static/app.css"`)
+	if bootstrap < 0 || bootstrapCSS < 0 || appCSS < 0 {
+		t.Fatalf("missing link: bootstrap=%d bootstrapCSS=%d appCSS=%d", bootstrap, bootstrapCSS, appCSS)
+	}
+	if bootstrap > bootstrapCSS {
+		t.Errorf("theme bootstrap at %d must precede the stylesheets at %d", bootstrap, bootstrapCSS)
+	}
+	// Bootstrap owns the palette and the components (S21); app.css only adds
+	// what Bootstrap does not have, so it has to load after it.
+	if bootstrapCSS > appCSS {
+		t.Errorf("bootstrap CSS at %d must precede app.css at %d", bootstrapCSS, appCSS)
 	}
 }
 

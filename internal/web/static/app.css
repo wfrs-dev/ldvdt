@@ -1,4 +1,8 @@
-/* ldvdt trainer — layout, keyboard and practice styles */
+/* ldvdt trainer — page shell, keyboard and practice styles.
+   Bootstrap 5.3 (vendor/bootstrap.min.css, compiled from docs/bootstrap-theme.scss)
+   owns the palette, the components and the light/dark surfaces via
+   [data-bs-theme] (S21, S24). This file only adds what Bootstrap does not have:
+   the Victor Mono faces, the three-row shell, the word strip and the keyboard. */
 
 /* Victor Mono: only the two woff2 faces the UI uses are embedded (S19).
    The italic face drives the titles, the regular face everything else. */
@@ -18,93 +22,21 @@
   font-display: swap;
 }
 
-/* Kanso Mist (dark) and Kanso Pearl (light) adapted to the app's semantic
-   tokens (S20). :root carries the dark theme (the default); [data-theme="light"]
-   overrides it. The colours come from resources/colors/kanso_{dark,light}.toml:
-   primary.background/foreground, normal.*, bright.* and selection.*. */
 :root {
-  color-scheme: dark;
+  /* Victor Mono for the whole UI, with Bootstrap's own stack as the fallback. */
+  --bs-body-font-family: "Victor Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --bg: #22262D;            /* primary.background */
-  --panel: #43464E;         /* selection.background */
-  /* Elevated surface for inputs and the keyboard tray. bright.black (#5C6066)
-     left body text at 3.8:1, below WCAG AA; this tone keeps 8.0:1. */
-  --panel-2: #2a2f37;
-  --text: #C5C9C7;          /* primary.foreground */
-  --muted: #a4a7a4;         /* normal.white */
-  --accent: #7fb4ca;        /* bright.blue */
-  --correct: #87a987;       /* bright.green */
-  --incorrect: #e46876;     /* bright.red */
-  --current: #e6c384;       /* bright.yellow */
-  --mod-border: #43464E;    /* selection.background */
+  /* The key to press (S23). Not a Bootstrap role: a fixed sage tone the user
+     picked for the keyboard highlight, identical in both themes. */
+  --ldvdt-key-current: #bc8f8f;
 
-  --key-bg: #1d2126;        /* slightly darker than --bg: recessed key faces */
-  --key-mod-bg: #22262D;    /* primary.background */
-  --key-active-bg: #43464E; /* selection.background */
-  --key-border: #43464E;    /* selection.background */
-  --text-inverse: #14171d;  /* text on accent/current fills */
-  --current-text: #14171d;  /* text on the current-key highlight */
-  --incorrect-bg: rgba(228, 104, 118, 0.18);
-
-  /* finger colours (keyboard top-border accents) */
-  --finger-LP: #e46876;
-  --finger-LR: #e6c384;
-  --finger-LM: #87a987;
-  --finger-LI: #7aa89f;
-  --finger-RI: #7fb4ca;
-  --finger-RM: #938aa9;
-  --finger-RR: #b6927b;
-  --finger-RP: #e46876;
-  --finger-TH: #5C6066;
-
-  --key-w: 52px;
   --key-h: 52px;
   --gap: 6px;
 }
 
-[data-theme="light"] {
-  color-scheme: light;
-
-  --bg: #f2f1ef;            /* primary.background */
-  --panel: #c9cbd1;         /* selection.background */
-  --panel-2: #f2f1ef;       /* primary.background */
-  --text: #545464;          /* primary.foreground */
-  /* bright.black (#8a8980) only reached 3.1:1 on --bg; this keeps the muted
-     tone but clears WCAG AA at 4.5:1. */
-  --muted: #6f6e66;
-  --accent: #4d699b;        /* normal.blue */
-  --correct: #6f894e;       /* normal.green */
-  --incorrect: #c84053;     /* normal.red */
-  --current: #e98a00;       /* indexed_colors[16] */
-  --mod-border: #8a8980;    /* bright.black */
-
-  --key-bg: #f2f1ef;        /* primary.background */
-  --key-mod-bg: #c9cbd1;    /* selection.background */
-  --key-active-bg: #c9cbd1; /* selection.background */
-  --key-border: #8a8980;    /* bright.black */
-  --text-inverse: #f2f1ef;  /* text on accent/current fills */
-  --current-text: #14171d;  /* text on the current-key highlight */
-  --incorrect-bg: rgba(200, 64, 83, 0.15);
-
-  --finger-LP: #c84053;
-  --finger-LR: #77713f;
-  --finger-LM: #6f894e;
-  --finger-LI: #597b75;
-  --finger-RI: #4d699b;
-  --finger-RM: #b35b79;
-  --finger-RR: #836f4a;
-  --finger-RP: #c84053;
-  --finger-TH: #8a8980;
-}
-
-* { box-sizing: border-box; }
-
-html, body {
-  margin: 0;
-  height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: "Victor Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+body {
+  /* Bootstrap paints the body; the shell only needs the full viewport. */
+  min-height: 100%;
 }
 
 /* Titles in the italic face, everything else regular (S19). */
@@ -129,7 +61,7 @@ h1, h2, h3 { font-style: italic; }
 }
 
 .panel {
-  background: var(--panel);
+  background: var(--bs-tertiary-bg);
   padding: 16px;
   overflow-y: auto;
 }
@@ -161,15 +93,15 @@ h1, h2, h3 { font-style: italic; }
 
 .controls label {
   font-size: 0.8rem;
-  color: var(--muted);
+  color: var(--bs-secondary-color);
   margin-top: 0;
 }
 
 .controls select,
 .controls input {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--key-border);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  border: 1px solid var(--bs-border-color);
   border-radius: 6px;
   padding: 8px;
   font-size: 1rem;
@@ -177,8 +109,8 @@ h1, h2, h3 { font-style: italic; }
 
 .controls button {
   margin-top: 0;
-  background: var(--accent);
-  color: var(--text-inverse);
+  background: var(--bs-primary);
+  color: var(--bs-white);
   border: none;
   border-radius: 6px;
   padding: 10px;
@@ -192,8 +124,8 @@ h1, h2, h3 { font-style: italic; }
 /* theme toggle: sits to the right of the controls form */
 #theme-toggle {
   margin-left: auto;
-  background: var(--accent);
-  color: var(--text-inverse);
+  background: var(--bs-primary);
+  color: var(--bs-white);
   border: none;
   border-radius: 6px;
   padding: 10px 14px;
@@ -228,7 +160,7 @@ h1, h2, h3 { font-style: italic; }
   margin: 0;
 }
 
-.stats dt { color: var(--muted); font-weight: 700; font-style: italic; }
+.stats dt { color: var(--bs-secondary-color); font-weight: 700; font-style: italic; }
 .stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 
 .chart-box { grid-area: chart; margin-top: 0; height: 160px; }
@@ -249,11 +181,11 @@ h1, h2, h3 { font-style: italic; }
 .word { white-space: nowrap; }
 
 .char { border-radius: 3px; padding: 0 1px; }
-.char.current { background: var(--current); color: var(--current-text); }
-.char.correct { color: var(--correct); }
-.char.incorrect { color: var(--incorrect); background: var(--incorrect-bg); }
+.char.current { background: var(--bs-warning); color: var(--bs-dark); }
+.char.correct { color: var(--bs-success); }
+.char.incorrect { color: var(--bs-danger); background: rgba(var(--bs-danger-rgb), 0.18); }
 
-.hint { color: var(--muted); text-align: center; max-width: 480px; }
+.hint { color: var(--bs-secondary-color); text-align: center; max-width: 480px; }
 
 /* Completion summary (WPM, accuracy, rhythm): centred, bold and italic, in the
    same italic voice as the headings, plus a button to start another practice. */
@@ -263,7 +195,7 @@ h1, h2, h3 { font-style: italic; }
   font-style: italic;
   font-weight: 700;
   font-size: 1.25rem;
-  color: var(--text);
+  color: var(--bs-body-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -279,8 +211,8 @@ h1, h2, h3 { font-style: italic; }
   font-style: normal;
   font-weight: 600;
   font-size: 0.95rem;
-  background: var(--accent);
-  color: var(--text-inverse);
+  background: var(--bs-primary);
+  color: var(--bs-white);
   border: none;
   border-radius: 6px;
   padding: 10px 16px;
@@ -295,7 +227,7 @@ h1, h2, h3 { font-style: italic; }
   flex-direction: column;
   gap: var(--gap);
   padding: 12px;
-  background: var(--panel-2);
+  background: var(--bs-body-bg);
   border-radius: 12px;
   width: min(100%, 880px);
   overflow-x: auto;
@@ -318,41 +250,42 @@ h1, h2, h3 { font-style: italic; }
   align-items: center;
   justify-content: center;
   gap: 0;
-  background: var(--key-bg);
-  border: 1px solid var(--key-border);
+  background: var(--bs-secondary-bg);
+  border: 1px solid var(--bs-border-color);
   cursor: default;
   user-select: none;
   transition: transform 60ms ease, box-shadow 60ms ease, background 60ms ease;
   position: relative;
 }
 
-.key-top { font-size: 0.72rem; color: var(--muted); line-height: 1; }
-.key-bottom { font-size: 0.95rem; color: var(--text); line-height: 1.1; }
+.key-top { font-size: 0.72rem; color: var(--bs-secondary-color); line-height: 1; }
+.key-bottom { font-size: 0.95rem; color: var(--bs-body-color); line-height: 1.1; }
 
-/* finger colours (top border accent) */
-.finger-LP { border-top: 3px solid var(--finger-LP); }
-.finger-LR { border-top: 3px solid var(--finger-LR); }
-.finger-LM { border-top: 3px solid var(--finger-LM); }
-.finger-LI { border-top: 3px solid var(--finger-LI); }
-.finger-RI { border-top: 3px solid var(--finger-RI); }
-.finger-RM { border-top: 3px solid var(--finger-RM); }
-.finger-RR { border-top: 3px solid var(--finger-RR); }
-.finger-RP { border-top: 3px solid var(--finger-RP); }
-.finger-TH { border-top: 3px solid var(--finger-TH); }
+/* finger colours (top border accent), mapped onto the palette's semantic roles */
+.finger-LP { border-top: 3px solid var(--bs-danger); }
+.finger-LR { border-top: 3px solid var(--bs-warning); }
+.finger-LM { border-top: 3px solid var(--bs-success); }
+.finger-LI { border-top: 3px solid var(--bs-info); }
+.finger-RI { border-top: 3px solid var(--bs-primary); }
+.finger-RM { border-top: 3px solid var(--bs-secondary); }
+.finger-RR { border-top: 3px solid var(--bs-light); }
+.finger-RP { border-top: 3px solid var(--bs-danger); }
+.finger-TH { border-top: 3px solid var(--bs-border-color); }
 
 /* highlight states applied by the typing engine */
 .key.active {
-  background: var(--key-active-bg);
-  box-shadow: inset 0 0 0 2px var(--accent);
+  background: var(--bs-tertiary-bg);
+  box-shadow: inset 0 0 0 2px var(--bs-primary);
 }
 
 .key.current {
-  background: var(--current);
-  border-color: var(--current);
+  background: var(--ldvdt-key-current);
+  border-color: var(--ldvdt-key-current);
+  color: var(--bs-dark);
   transform: translateY(2px);
 }
 .key.current .key-top,
-.key.current .key-bottom { color: var(--current-text); }
+.key.current .key-bottom { color: var(--bs-dark); }
 
 /* width units: flex-grow proportional to the key's physical width */
 .key[data-w="1"]    { flex-grow: 1; }
@@ -364,10 +297,10 @@ h1, h2, h3 { font-style: italic; }
 
 /* decorative modifier keys: same neutral colour */
 .key-mod {
-  background: var(--key-mod-bg);
-  border-color: var(--mod-border);
+  background: var(--bs-tertiary-bg);
+  border-color: var(--bs-border-color);
 }
-.key-mod .key-bottom { font-size: 0.72rem; color: var(--muted); }
+.key-mod .key-bottom { font-size: 0.72rem; color: var(--bs-secondary-color); }
 
 /* ISO Enter: a single L-shaped key split in two halves that merge.
    The top half closes the upper row and bridges the row gap; the bottom half
@@ -389,7 +322,7 @@ h1, h2, h3 { font-style: italic; }
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   /* the notch: a top edge only where the narrow upper half does not cover it */
-  box-shadow: 0 -1px 0 0 var(--mod-border);
+  box-shadow: 0 -1px 0 0 var(--bs-border-color);
 }
 
 /* the spacebar keeps the modifier look but reads as a normal key face */
