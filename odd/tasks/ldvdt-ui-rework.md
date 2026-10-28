@@ -15,11 +15,11 @@ paleta del usuario, un `div.container` de tres filas y el teclado dibujado en SV
 ## Tasks
 
 - **T1** — Renombrar `id="rect83"` → `id="key7"` en `docs/keyboard.svg` (falta el id de la tecla `6`/`>`). [S23, S26] · usuario · n/a
-- **T2** — Vendorizar Bootstrap 5.3.3 compilado desde Sass con la paleta de S21 + puente de tema `data-bs-theme` en `app.css`. [S21, S24] · inline · `feat: vendor themed Bootstrap 5 and the new palette`
-- **T3** — Envolver el shell en `div.container` con las tres filas y componentes Bootstrap (form, stats, chart). [S22, S24] · inline · `feat: wrap the SPA shell in a Bootstrap container`
-- **T4** — Generador + dominio: campo `id` de `layout.yaml` → `Key.ID`, copia generada del SVG y componente `Keyboard` que embebe el SVG con su `data-keymap`. [S23, S26] · inline · `feat: render the keyboard from the SVG design`
-- **T5** — Motor JS: resaltar la tecla actual por `#key<id>` con `#bc8f8f`, restaurar el relleno original y quitar el resaltado de nivel. [S23, S25] · inline · `feat: highlight the SVG key to press`
-- **T6** — Tests (Go + JS) y docs (`README.md`, CI de artefactos generados). [S21, S22, S23] · inline · `docs: document the Bootstrap shell and SVG keyboard`
+- **T2** — ✅ Vendorizar Bootstrap 5.3.3 compilado desde Sass con la paleta de S21 + puente de tema `data-bs-theme` en `app.css`. [S21, S24] · inline · `ce98a20 feat: vendor themed Bootstrap 5 and the new palette`
+- **T3** — ✅ Envolver el shell en `div.container` con las tres filas y componentes Bootstrap (form, stats, chart). [S22, S24] · inline · `6f38279 feat: wrap the SPA shell in a Bootstrap container`
+- **T4** — ✅ Generador + dominio: campo `id` de `layout.yaml` → `Key.ID`, copia generada del SVG y componente `Keyboard` que embebe el SVG con su `data-keymap`. [S23, S26] · inline · `48d3d99 feat: render the keyboard from the SVG design`
+- **T5** — ✅ Motor JS: resaltar la tecla actual por `#key<id>` con `#bc8f8f`, restaurar el relleno original y quitar el resaltado de nivel. [S23, S25] · inline · `88190e8 feat: highlight the SVG key to press`
+- **T6** — ✅ Tests (Go + JS) y docs (`README.md`, CI de artefactos generados). [S21, S22, S23] · inline · `docs: document the Bootstrap shell and SVG keyboard`
 
 ## Log
 

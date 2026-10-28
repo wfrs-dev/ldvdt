@@ -52,8 +52,8 @@ jobs:
           done
           exit $status
 
-  templates:
-    name: Generated templates are current
+  generated:
+    name: Generated artifacts are current
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -69,6 +69,14 @@ jobs:
       - name: Fail when the committed *_templ.go files are stale
         run: |
           templ generate
+          git diff --exit-code
+
+      # layout_gen.go and the embedded SVG copy are generated from docs/ and
+      # committed; a stale copy would ship a keyboard that disagrees with the
+      # design or with the ids the client resolves.
+      - name: Fail when the generated layout or SVG copy is stale
+        run: |
+          go generate ./internal/domain
           git diff --exit-code
 
   cross-compile:
