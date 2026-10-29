@@ -9,16 +9,7 @@ opens your default browser.
 
 The page is a single Bootstrap container with three stacked rows:
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│ Level · Language · Word count · [ Empezar ]      [ Theme ]   │
-├──────────────────────────────────────────────────────────────┤
-│                  isla  otro  sol  ...                        │
-│            ISO keyboard, drawn as an inline SVG              │
-├──────────────────────────────────────────────────────────────┤
-│ Progress: stats + chart                                      │
-└──────────────────────────────────────────────────────────────┘
-```
+![ldvdt trainer: the practice controls, the words with per-character feedback, the SVG keyboard and the progress panel with its chart](assets/app.png)
 
 ## Requirements
 
@@ -196,3 +187,5 @@ The database is created on first run.
   focus while practising.
 - When a dead key is used, browsers may deliver either the composed character
   (`á`) or `Dead` followed by the base letter (`a`). Both are handled.
+
+[![Built with Gentle-AI](https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/docs/assets/brand/built-with-gentle-ai.png)](https://github.com/Gentleman-Programming/gentle-ai)
