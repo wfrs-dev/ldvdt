@@ -181,8 +181,9 @@ The database is created on first run.
 
 ## Notes
 
-- The server binds to `:10987` on **all interfaces** (hefesto's `Start` hardcodes
-  `":" + port`). The app has no authentication, so treat it as a local tool.
+- The server binds to `127.0.0.1:10987` (loopback only; hefesto 0.1.2 added
+  `server.listen`, which the trainer pins to the loopback address because it has
+  no authentication).
 - Typing is captured with `keydown` on the page; the browser window must have
   focus while practising.
 - When a dead key is used, browsers may deliver either the composed character

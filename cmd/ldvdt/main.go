@@ -54,6 +54,9 @@ func run() error {
 
 	hefCfg := &hefconfig.Config{
 		Server: hefconfig.Server{
+			// An empty Listen would make Echo bind every interface; the
+			// trainer has no authentication, so keep it on loopback.
+			Listen:   cfg.Host,
 			Port:     cfg.Port,
 			LogLevel: cfg.LogLevel,
 		},
@@ -70,7 +73,7 @@ func run() error {
 	svc := trainer.NewService(store, wordCorpus, levels)
 	srv.AddModule(trainer.NewModule(svc, kb))
 
-	addr := fmt.Sprintf("http://127.0.0.1:%d", cfg.Port)
+	addr := "http://" + cfg.ListenAddr()
 	if cfg.OpenBrowser {
 		go func() {
 			waitForServer(addr)
