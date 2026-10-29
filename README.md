@@ -1,8 +1,10 @@
-# ldvdt — trainer for the `ldvd` keyboard layout
+# ldvdt — trainer for the [`ldvd`](https://github.com/wfrs-dev/ldvd) keyboard layout
 
-A small local web server that teaches and drills the custom **`ldvd`** keyboard
-layout (a Latin-American Dvorak variant adapted for programming) through
-cumulative difficulty levels.
+A small local web server that teaches and drills the custom
+**[`ldvd`](https://github.com/wfrs-dev/ldvd)** keyboard layout (a Latin-American
+Dvorak variant adapted for programming) through cumulative difficulty levels.
+The layout definition itself — the Linux keymaps and the Windows `.klc` — is
+published in that repository; this one holds only the trainer.
 
 The binary serves a server-rendered SPA, stores your progress in SQLite, and
 opens your default browser.
@@ -145,7 +147,8 @@ the corpora are filtered out.
 
 ## Layout semantics
 
-Every key in `docs/layout.yaml` has two characters:
+Every key in `docs/layout.yaml` — this trainer's machine-readable version of
+the [`ldvd` layout](https://github.com/wfrs-dev/ldvd) — has two characters:
 
 - `bottom` — produced by a plain key press
 - `top` — produced by holding **Shift**
